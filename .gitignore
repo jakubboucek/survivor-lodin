@@ -4,6 +4,9 @@
 # Composer
 /web/vendor/
 
+# Frontend (npm / Vite) – tooling lives in repo root, not in web/ (not uploaded to hosting)
+/node_modules/
+
 # Nette
 /web/temp/
 /web/log/

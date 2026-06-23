@@ -70,8 +70,13 @@ survivor-lodin/             # kořen repa = celý projekt (mountuje se do /var/w
 ├── docker-compose.yml      # jen lokální vývoj, na hosting se nenahrává
 ├── .docker/                # data MariaDB (gitignored), nenahrává se
 ├── bin/                    # CLI tooly MIMO hosting – spouští se lokálně v Dockeru (příklad)
+├── assets/                 # FRONTEND zdroje (main.js, SCSS…) – mimo hosting, build na hostu
+├── node_modules/           # npm závislosti (gitignored) – mimo hosting
+├── package.json            # FE závislosti a scripty (npm run dev/build) – mimo hosting
+├── vite.config.ts          # konfigurace Vite – mimo hosting
 └── web/                    # << TENTO adresář se nahrává na webhosting
     ├── www/                # DOCUMENT ROOT (jediná veřejně přístupná část)
+    │   └── assets/         # Vite BUILD OUTPUT – VERZOVANÝ v gitu (commituje se, viz Frontend)
     ├── app/                # Nette aplikace (presentery, model, šablony) – mimo document root
     ├── config/             # NEON konfigurace
     ├── vendor/             # Composer závislosti (gitignored) – mimo document root
@@ -88,6 +93,34 @@ survivor-lodin/             # kořen repa = celý projekt (mountuje se do /var/w
 Mapování v `docker-compose.yml` (zdroj pravdy, neupravovat): kořen repa (`.`) → `/var/www/html`,
 `APACHE_DOCUMENT_ROOT` = `/var/www/html/web/www` (odpovídá `web/www`). Hostingovému `web/` tak
 v kontejneru odpovídá `/var/www/html/web`.
+
+## Frontend (Vite / npm)
+
+Frontendový tooling **záměrně leží v kořeni repa, ne ve `web/`** — aby se `node_modules` ani
+zdroje nenahrávaly na hosting. Na webhosting jde jen zbuilděný výstup ve `web/www/assets/`.
+
+- **Zdroje:** `assets/` (entry `assets/main.js`).
+- **Build výstup:** `web/www/assets/` — **záměrně VERZOVANÝ v gitu, není v `.gitignore`**. Důvod:
+  na projektu dělá víc lidí a build je napevno svázaný s verzí v gitu, takže při marginální změně
+  nemusí nikdo před uploadem buildit. **Po změně čehokoli v `assets/` je proto nutné spustit
+  `npm run build` a zbuilděný `web/www/assets/` commitnout** (jinak se rozejde se zdroji).
+  `emptyOutDir: true` adresář při každém buildu vyčistí, takže nezůstávají osiřelé hashované
+  soubory. Cestu řídí `outDir: '../web/www/assets'` ve `vite.config.ts` (relativně k Vite rootu
+  `assets/`).
+- **Node běží na HOSTU, ne v kontejneru** — devstack image je LAMP bez Node. Frontend příkazy
+  pouštěj na hostu z kořene repa:
+
+  ```bash
+  npm install
+  npm run dev      # Vite dev server + HMR (vývoj)
+  npm run build    # produkční build do web/www/assets/
+  ```
+
+- **Napojení na PHP:** Nette Assets v `web/config/common.neon` (`assets: mapping: default:
+  path: assets, type: vite`) čte manifest z `web/www/assets/.vite/`. `path: assets` je relativní
+  k web rootu (`web/www`), takže **se přesunem zdrojů nemění** — dokud build míří do
+  `web/www/assets`, PHP konfigurace zůstává.
+- V šablonách se assety vkládají přes `{asset 'main.js'}` (viz `@layout.latte`).
 
 ## Databázové migrace
 
@@ -115,8 +148,12 @@ autorizací. Konkrétní rozdělení doplň, až bude kód existovat.
 
 ## Testování webu
 
-Webovou část testuj přes **Chrome (plugin/MCP) proti `http://localhost:8080`** — ne přes čisté
-curl, ať se ověří i klientské chování a Tracy výstup (viz skill `nette:tracy-debugging`).
+Webovou část testuj přes **chrome-devtools-mcp proti `http://localhost:8080`** — ne přes čisté
+curl, ať se ověří i klientské chování a Tracy výstup (viz skill `nette:tracy-debugging`,
+Tracy mirroruje výstup do konzole, čti přes `list_console_messages`).
+
+Používej **chrome-devtools-mcp** (vlastní izolovaná instance) — neovlivní cookies/přihlášení
+uživatele v jeho prohlížeči. Rozšíření „Claude in Chrome" jen na výslovné vyžádání.
 
 ## Konvence pro Claude
 
