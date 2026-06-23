@@ -1,0 +1,12 @@
+# Local dev infrastructure (Docker) – not deployed to hosting
+/.docker/
+
+# Composer
+/web/vendor/
+
+# Nette
+/web/temp/
+/web/log/
+
+# Local config overrides (secrets)
+/web/app/config/local.neon
