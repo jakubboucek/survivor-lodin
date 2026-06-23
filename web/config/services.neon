@@ -1,5 +1,5 @@
 services:
-        - App\Core\RouterFactory::createRouter
+  router: App\Core\RouterFactory::createRouter(%appDomain%)
 
 
 search:

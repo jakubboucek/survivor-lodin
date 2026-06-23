@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
 
-        <title>{ifset title}{include title|stripHtml} | {/ifset}Nette Web</title>
+    <title>{ifset title}{include title|stripHtml} | {/ifset}Nette Web</title>
 
-        {asset? 'main.js'}
+    {asset? 'main.js'}
 </head>
 
 <body>
-        <div n:foreach="$flashes as $flash" n:class="flash, $flash->type">{$flash->message}</div>
+<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">{$flash->message}</div>
 
-        {include content}
+{include content}
 </body>
 </html>
