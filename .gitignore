@@ -11,5 +11,5 @@
 /web/temp/
 /web/log/
 
-# Local config overrides (secrets)
-/web/app/config/local.neon
+# Local config overrides (secrets, per-environment)
+/web/config/local.neon

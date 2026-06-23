@@ -1,6 +1,10 @@
 # see https://doc.nette.org/en/configuring
 
 parameters:
+  # Base domain used by the router to split the two app variants by subdomain.
+  # Dev default = localhost (works via *.localhost in the browser, no /etc/hosts).
+  # Production overrides this in config/local.neon (e.g. survivor-lodin.cz).
+  appDomain: localhost
 
 
 application:
@@ -11,9 +15,11 @@ application:
 
 
 database:
-  dsn: 'sqlite::memory:'
-  user:
-  password:
+  # Dev default points at the devstack MariaDB container (mysqldb).
+  # Production overrides credentials in config/local.neon.
+  dsn: 'mysql:host=mysqldb;dbname=default'
+  user: root
+  password: devstack
 
 
 latte:
