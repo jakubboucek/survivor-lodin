@@ -9,6 +9,8 @@ týmů. Za login-wallem mají pořadatelé přístup k administraci a interním 
 
 - **Jazyk rozhraní:** celá aplikace je v **češtině** (UI texty, šablony, hlášky).
 - **Jazyk kódu:** názvy proměnných, tříd, metod, komentáře v kódu i SQL vždy **anglicky**.
+  Code-related sem patří i **CI/workflow soubory, testy a commit messages** — taky **anglicky**
+  (včetně názvů kroků/úloh, ty drž jako stručné štítky, ne souvětí).
 - **Komunikace v tomto repu (CLAUDE.md, odpovědi):** česky.
 
 ## Technologický stack
