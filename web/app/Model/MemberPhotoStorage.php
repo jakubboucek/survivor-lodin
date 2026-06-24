@@ -7,6 +7,7 @@ use Nette\Utils\FileSystem;
 use Nette\Utils\Image;
 use Nette\Utils\ImageColor;
 use Nette\Utils\Random;
+use Nette\Utils\Strings;
 
 
 /**
@@ -25,15 +26,21 @@ final readonly class MemberPhotoStorage
     }
 
 
-    /** Resize the upload to a centred 200×200 webp, store it, return the filename. */
-    public function store(FileUpload $file): string
+    /**
+     * Resize the upload to a centred 200×200 webp, store it, return the filename.
+     * The filename is a webalized "<label> <Y-m-d>" plus a random nonce – purely
+     * informative (it freezes the team/member state at upload time; a later rename
+     * won't update it) and made unique by the nonce.
+     */
+    public function store(FileUpload $file, string $label): string
     {
         $image = $file->toImage();
         $this->applyExifOrientation($image, $file->getTemporaryFile());
         $image->resize(self::Size, self::Size, Image::Cover);
 
         FileSystem::createDir($this->directory);
-        $filename = Random::generate(20) . '.webp';
+        $slug = Strings::webalize($label . ' ' . date('Y-m-d'));
+        $filename = $slug . '-' . Random::generate(6) . '.webp';
         $image->save($this->directory . '/' . $filename);
 
         return $filename;

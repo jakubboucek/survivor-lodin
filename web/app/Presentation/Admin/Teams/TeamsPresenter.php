@@ -153,8 +153,12 @@ final class TeamsPresenter extends BasePresenter
                 return;
             }
 
+            // Filename freezes the team/member state at upload time (just informative).
+            $team = $this->teams->getByCode($this->editedMember->team_code);
+            $label = $team->name . ' ' . $this->editedMember->name;
+
             // Store the new file first, then drop the old one (unique name = fresh URL).
-            $filename = $this->photos->store($upload);
+            $filename = $this->photos->store($upload, $label);
             $this->photos->delete($this->editedMember->photo);
             $this->teams->updateMember((int) $this->editedMember->id, ['photo' => $filename]);
 

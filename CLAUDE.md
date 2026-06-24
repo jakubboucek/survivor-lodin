@@ -202,8 +202,10 @@ Hra má **přesně dva fixní týmy** (počet se nemění). Datový model to vyu
   **nahrávají přes admin** do **gitignorovaného `/web/www/upload/teams/`** (servíruje se z
   `/upload/teams/<soubor>`) — mimo verzované `/img/`. Upload řeší služba
   **`App\Model\MemberPhotoStorage`** (registrovaná v `services.neon` s cílovým adresářem):
-  zmenší na **200×200 WebP** (Nette `Image::Cover`, originál zahodí), uloží pod **náhodným
-  unikátním názvem** (každá změna = nová URL kvůli cache) a **starý soubor smaže** při výměně
+  zmenší na **200×200 WebP** (Nette `Image::Cover`, originál zahodí; respektuje EXIF orientaci
+  z foťáku), uloží pod **webalizovaným názvem `<tým> <člen> <Y-m-d> <nonce>`** (`Strings::webalize`,
+  jen orientační — zamrzne stav při uploadu, po přejmenování nesedí; nonce drží unikátnost a
+  každá změna = nová URL kvůli cache) a **starý soubor smaže** při výměně
   i smazání člena. `sort_order` existuje pro budoucí ruční řazení, ale **výpis členů zatím
   ignoruje a řadí abecedně podle `name`** (`TeamRepository::findMembers`). Bez fotky ukazuje
   admin placeholder `/img/abstract-user-flat-3.svg`.
