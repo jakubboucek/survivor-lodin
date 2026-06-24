@@ -2,60 +2,67 @@
 
 namespace App\Presentation\Teams;
 
+use App\Model\GameRepository;
+use App\Model\TeamCode;
+use App\Model\TeamRepository;
 use Nette;
 
 
 final class TeamsPresenter extends Nette\Application\UI\Presenter
 {
+    public function __construct(
+        private readonly TeamRepository $teams,
+        private readonly GameRepository $games,
+    ) {
+        parent::__construct();
+    }
+
+
     public function renderDefault(): void
     {
-        // Dummy data – to be replaced with a real DB-backed repository.
-        // `key` is the internal crest name (medved/srsen); `name` is the real,
-        // editable team name (currently a hardcoded placeholder).
-        // `members`: one entry per team member; `photo` is an optional round avatar
-        // (filename under /img/, e.g. 'members/jan.jpg'), null = name only. The crest
-        // files below are just placeholders to demonstrate the avatar slot.
-        $teams = [
-            'medved' => [
-                'name' => 'Hrdinové',
-                'crest' => 'survival-lodin-crest-medved',
-                'members' => [
-                    ['name' => 'Anna Nováková', 'photo' => 'survival-lodin-crest-medved.webp'],
-                    ['name' => 'Petr Svoboda', 'photo' => 'survival-lodin-crest-medved.webp'],
-                    ['name' => 'Klára Dvořáková', 'photo' => null],
-                    ['name' => 'Tomáš Procházka', 'photo' => null],
-                    ['name' => 'Eliška Veselá', 'photo' => null],
-                ],
-            ],
-            'srsen' => [
-                'name' => 'Padouši',
-                'crest' => 'survival-lodin-crest-srsen',
-                'members' => [
-                    ['name' => 'Marek Horák', 'photo' => null],
-                    ['name' => 'Lucie Němcová', 'photo' => null],
-                    ['name' => 'Jakub Pokorný', 'photo' => null],
-                    ['name' => 'Tereza Marková', 'photo' => null],
-                    ['name' => 'Ondřej Kučera', 'photo' => null],
-                ],
-            ],
-        ];
+        $now = new \DateTimeImmutable();
 
-        // One row per game; `points` holds the score each team earned in it
-        // (usually 0–1, exceptionally up to 5).
-        $games = [
-            ['name' => 'Lanová dráha', 'points' => ['medved' => 1, 'srsen' => 0]],
-            ['name' => 'Šifrovačka', 'points' => ['medved' => 0, 'srsen' => 1]],
-            ['name' => 'Noční bojovka', 'points' => ['medved' => 1, 'srsen' => 1]],
-            ['name' => 'Lukostřelba', 'points' => ['medved' => 0, 'srsen' => 1]],
-            ['name' => 'Stavba přístřešku', 'points' => ['medved' => 1, 'srsen' => 0]],
-            ['name' => 'Velká hra v lese', 'points' => ['medved' => 5, 'srsen' => 3]],
-            ['name' => 'Orientační běh', 'points' => ['medved' => 1, 'srsen' => 0]],
-        ];
+        // Teams keyed by internal code, with display name, crest and members.
+        $teams = [];
+        foreach ($this->teams->findAllOrdered() as $team) {
+            $members = [];
+            foreach ($this->teams->findMembers($team->code) as $member) {
+                $members[] = ['name' => $member->name, 'photo' => $member->photo];
+            }
 
+            $teams[$team->code] = [
+                'name' => $team->name,
+                'crest' => TeamCode::from($team->code)->crest(),
+                'members' => $members,
+            ];
+        }
+
+        // Scored games, oldest first. Embargoed games (future published_at) are
+        // shown without scores – the template prints the reveal time instead –
+        // and are excluded from the running totals until released.
+        $games = [];
         $totals = array_fill_keys(array_keys($teams), 0);
-        foreach ($games as $game) {
-            foreach ($game['points'] as $teamKey => $points) {
-                $totals[$teamKey] += $points;
+        foreach ($this->games->findScoredOrdered() as $game) {
+            $revealed = $game->published_at === null || $game->published_at <= $now;
+
+            $points = [];
+            foreach (TeamCode::cases() as $code) {
+                $points[$code->value] = $game->{$code->pointsColumn()};
+            }
+
+            $games[] = [
+                'name' => $game->name,
+                'revealed' => $revealed,
+                // Reveal time is always shown as time only (no date) – an early-morning
+                // next-day release reads as just the time. Far-future dates are not a concern.
+                'revealTime' => $revealed ? null : $game->published_at->format('G:i'),
+                'points' => $points,
+            ];
+
+            if ($revealed) {
+                foreach ($points as $code => $value) {
+                    $totals[$code] += $value;
+                }
             }
         }
 

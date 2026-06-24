@@ -184,6 +184,40 @@ Jakákoli změna struktury DB (DDL) se zakládá jako **SQL soubor v `/migration
   použij analogicky **PHP soubor** se stejným pojmenováním (`…-popis.php`) ve stejném adresáři.
 - **Spouštění:** migrace se na serveru **NEspouštějí automaticky** — vše aplikuje obsluha ručně.
 
+## Datový model: týmy, členové, hry, výsledky
+
+Hra má **přesně dva fixní týmy** (počet se nemění). Datový model to využívá:
+
+- **`team`** — dva řádky. PK `code` = neměnný interní klíč `bear` | `hornet` (drží i `CHECK`
+  na tyto dvě hodnoty). `name` je **editovatelný** zobrazovaný název (zatím „Hrdinové" /
+  „Padouši"). Crest ani názvy sloupců se z DB neberou — odvozují se z kódu (viz enum níže).
+  *Proč VARCHAR PK a ne ENUM:* `team_member.team_code` je FK na `team.code`; FK mezi dvěma
+  ENUM sloupci v MariaDB vyžaduje identické definice a ENUM jako PK má ostré hrany — VARCHAR
+  PK + FK + `CHECK` dává stejnou garanci čistěji.
+- **`team_member`** — řádek na člena (proměnný počet), FK `team_code` → `team.code`
+  (`ON DELETE CASCADE`). `photo` = volitelný kulatý avatar (NULL = jen jméno). Fotky se
+  **nahrávají přes admin** do **gitignorovaného `/web/www/upload/teams/`** (servíruje se z
+  `/upload/teams/<soubor>`) — tedy **mimo verzované `/img/`**, kam patří jen statické assety
+  dodané s kódem. `sort_order` řídí pořadí.
+- **`game`** — **denormalizovaná „široká" tabulka výsledků: jeden řádek = jedna hra = výsledek
+  obou týmů.** Sloupce `bear_points` / `hornet_points` napevno odpovídají `team.code`. Vědomé
+  rozhodnutí (2 fixní týmy, body se zadávají pro oba současně): zjednodušuje SQL i zápis,
+  `SUM()` je triviální, žádné joiny. Cena (3. tým = změna schématu) je zadáním vyloučená.
+  - **Nezahraná hra:** `*_points` jsou NULL; `CHECK ((bear_points IS NULL) = (hornet_points
+    IS NULL))` vynutí „oba nebo žádný". Veřejně se nezobrazuje.
+  - **`played_at`** = čas odehrání; **řadicí klíč** veřejné listiny (`ORDER BY played_at, id`).
+  - **`published_at`** = release time výsledků; **NULL = zveřejnit hned**. Embargovaná hra
+    (budoucí `published_at`) se na veřejnosti **zobrazí bez skóre** — místo badge je text
+    „Výsledky budou vyhlášeny přesně …" přes oba sloupce — a **nepočítá se do součtu**, dokud
+    není odhalena. Predikát „odhaleno" = `published_at IS NULL OR published_at <= NOW()`.
+
+**Mapování kód ↔ tým** drží PHP enum **`App\Model\TeamCode`** (`Bear`/`Hornet`): `crest()`
+vrací basename obrázku (`survival-lodin-crest-medved` / `-srsen`), `pointsColumn()` vrací
+`bear_points` / `hornet_points`. Repository (`TeamRepository`, `GameRepository`) jsou tenké
+(Selection API); reveal/embargo logiku a tvar dat pro šablonu skládá `TeamsPresenter`.
+
+První migrace modelu: `2026-06-24-01-create-teams-and-games.sql` (včetně seedu obou týmů).
+
 ## Členění aplikace, layouty a routování
 
 Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:

@@ -12,6 +12,7 @@
 # Nette
 /web/temp/
 /web/log/
+/web/www/upload/
 
 # Local config overrides (secrets, per-environment)
 /web/config/local.neon
