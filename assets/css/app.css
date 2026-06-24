@@ -1,0 +1,6 @@
+/* Tailwind CSS entry. */
+@import "tailwindcss";
+
+/* Latte templates live in web/app, outside the Vite root (assets/), so Tailwind's
+   automatic source detection does not reach them – point it there explicitly. */
+@source "../../web/app/**/*.latte";

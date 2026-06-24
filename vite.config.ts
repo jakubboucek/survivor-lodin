@@ -1,4 +1,5 @@
 import {defineConfig} from 'vite';
+import tailwindcss from '@tailwindcss/vite'
 import nette from '@nette/vite-plugin';
 
 export default defineConfig({
@@ -6,6 +7,7 @@ export default defineConfig({
         nette({
             entry: 'main.js',
         }),
+        tailwindcss(),
     ],
 
     build: {

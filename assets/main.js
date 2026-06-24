@@ -1,3 +1,5 @@
+import './css/app.css';
+
 // Initialize Nette Forms on page load
 import netteForms from 'nette-forms';
 
