@@ -13,6 +13,9 @@
     # Block access to hidden files (starting with a dot) and URLs resembling WordPress admin paths
     RewriteRule /\.|^\.|^wp-(login|admin|includes|content) - [F]
 
+    # Redirect the conventional /favicon.ico path to the PNG icon (no .ico file is shipped)
+    RewriteRule ^favicon\.ico$ /img/icon-192.png [R=302,L]
+
     # Force usage of HTTPS (secure connection). Uncomment if you have SSL setup.
     # RewriteCond %{HTTPS} !on
     # RewriteRule .? https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
@@ -25,6 +28,11 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule . index.php [L]
+</IfModule>
+
+# Serve the web app manifest with the correct MIME type
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
 </IfModule>
 
 # Enable gzip compression for text files

@@ -137,6 +137,14 @@ zdroje nenahrávaly na hosting. Na webhosting jde jen zbuilděný výstup ve `we
   `@source`).
 - **Statické obrázky:** `web/www/img/` (logo, forest pozadí; varianty WEBP + AVIF). Servírují se
   přímo z `/img/...` (mimo Vite pipeline) — v CSS přes `image-set()`, v šablonách přes `<picture>`.
+- **Favicony / app ikony:** PNG sada leží taky v `web/www/img/` (`apple-touch-icon.png` 180×180,
+  `icon-192.png`/`icon-512.png` + `*-maskable` varianty pro Android/PWA). Žádný `.ico` ani SVG se
+  nedodává. `<link>` tagy jsou v **sdíleném partialu `web/app/Presentation/@icons.latte`**
+  (theme-color + favicon/apple-touch/manifest), který `{include}`ují všechny čtyři layouty
+  (`@cover`, `@layout`, `Admin/@layout`, `Sign/@layout` — z podadresářů přes `../@icons.latte`).
+  PWA manifest je `web/www/site.webmanifest` (`AddType application/manifest+json` v `.htaccess`).
+  Konvenční `/favicon.ico` řeší `.htaccess` **302 redirectem na `/img/icon-192.png`** (pravidlo
+  musí být PŘED blokem, který `\.ico$` jinak ukončí `[L]` → 404).
 - **Build výstup:** `web/www/assets/` — **záměrně VERZOVANÝ v gitu, není v `.gitignore`**. Důvod:
   na projektu dělá víc lidí a build je napevno svázaný s verzí v gitu, takže při marginální změně
   nemusí nikdo před uploadem buildit. **Po změně čehokoli v `assets/` je proto nutné spustit
