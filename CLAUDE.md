@@ -230,10 +230,11 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
 
 - Cover se nastaví v `HomePresenter::beforeRender()` přes `setLayout('cover')`; admin layout se
   aplikuje automaticky (leží v adresáři modulu `Admin/`); jinak platí výchozí `@layout.latte`.
-- **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro), `Teams` (ukázkové
-  pořadí) = veřejná část; `Sign` (login/logout, mimo modul Admin, vlastní layout);
-  `Admin\Dashboard`, `Admin\QrCodes`, `Admin\Users` (extends `Admin\BasePresenter` = login-wall);
-  `Redirect` = QR přesměrovávač.
+- **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro), `Teams` (veřejná
+  výsledková listina + rostery týmů, z DB) = veřejná část; `Sign` (login/logout, mimo modul
+  Admin, vlastní layout); `Admin\Dashboard`, `Admin\QrCodes`, `Admin\Users`, `Admin\Teams`
+  (názvy týmů + správa členů), `Admin\Games` (CRUD her/výsledků) — vše extends
+  `Admin\BasePresenter` = login-wall; `Redirect` = QR přesměrovávač.
 
 ### Přihlášení do administrace (login-wall)
 

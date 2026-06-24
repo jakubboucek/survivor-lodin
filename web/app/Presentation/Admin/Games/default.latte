@@ -1,0 +1,53 @@
+{block title}Hry{/block}
+
+{block content}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Hry</h1>
+    <a href="{plink edit}" class="btn btn-neutral btn-sm">Přidat hru</a>
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Hra</th>
+                <th>Odehráno</th>
+                <th>Výsledek</th>
+                <th>Zveřejnění</th>
+                <th class="text-right">Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$games as $game">
+                <td class="font-medium">{$game->name}</td>
+                <td>{$game->played_at ? ($game->played_at|date:'j. n. Y H:i') : '—'}</td>
+                <td>
+                    {if $game->bear_points === null}
+                        <span class="opacity-60">nezadáno</span>
+                    {else}
+                        {$teamNames['bear']} <strong>{$game->bear_points}</strong> :
+                        <strong>{$game->hornet_points}</strong> {$teamNames['hornet']}
+                    {/if}
+                </td>
+                <td>
+                    {if $game->published_at === null}
+                        <span class="badge badge-ghost badge-sm">ihned</span>
+                    {elseif $game->published_at > $now}
+                        <span class="badge badge-warning badge-sm">embargo do {$game->published_at|date:'j. n. H:i'}</span>
+                    {else}
+                        {$game->published_at|date:'j. n. Y H:i'}
+                    {/if}
+                </td>
+                <td class="text-right">
+                    <a href="{plink edit, $game->id}" class="btn btn-ghost btn-xs">Upravit</a>
+                    <a href="{plink delete, $game->id}" class="btn btn-ghost btn-xs text-error"
+                       onclick="return confirm('Opravdu smazat tuto hru?')">Smazat</a>
+                </td>
+            </tr>
+            <tr n:if="!count($games)">
+                <td colspan="5" class="text-center opacity-60">Zatím žádné hry.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{/block}

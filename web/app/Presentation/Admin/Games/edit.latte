@@ -1,0 +1,50 @@
+{block title}{$editedGame ? 'Úprava hry' : 'Nová hra'}{/block}
+
+{block content}
+<div class="mx-auto max-w-lg">
+    <h1 class="text-2xl font-bold">{$editedGame ? 'Úprava hry' : 'Nová hra'}</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="gameForm" class="flex flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Název hry</span>
+                    <input n:name="name" class="input input-bordered w-full">
+                </label>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="form-control">
+                        <span class="label-text mb-1 block">{$form['bear_points']->caption}</span>
+                        <input n:name="bear_points" class="input input-bordered w-full">
+                    </label>
+                    <label class="form-control">
+                        <span class="label-text mb-1 block">{$form['hornet_points']->caption}</span>
+                        <input n:name="hornet_points" class="input input-bordered w-full">
+                    </label>
+                </div>
+                <p class="-mt-2 text-sm opacity-60">Body zadej pro oba týmy, nebo nech obě prázdná (neodehráno).</p>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Odehráno</span>
+                    <input n:name="played_at" class="input input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Zveřejnit výsledky</span>
+                    <input n:name="published_at" class="input input-bordered w-full">
+                    <span class="label-text-alt mt-1 block opacity-60">Prázdné = zveřejnit ihned.</span>
+                </label>
+
+                <div class="mt-2 flex gap-2">
+                    <button n:name="send" class="btn btn-neutral">{$editedGame ? 'Uložit' : 'Vytvořit'}</button>
+                    <a href="{plink default}" class="btn btn-ghost">Zpět</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}

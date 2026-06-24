@@ -1,0 +1,27 @@
+{block title}Přejmenovat tým{/block}
+
+{block content}
+<div class="mx-auto max-w-md">
+    <h1 class="text-2xl font-bold">Přejmenovat tým</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="teamForm" class="flex flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Název týmu</span>
+                    <input n:name="name" class="input input-bordered w-full">
+                </label>
+
+                <div class="mt-2 flex gap-2">
+                    <button n:name="send" class="btn btn-neutral">Uložit</button>
+                    <a href="{plink default}" class="btn btn-ghost">Zpět</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}
