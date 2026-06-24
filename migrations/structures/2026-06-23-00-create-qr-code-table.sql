@@ -11,4 +11,4 @@ CREATE TABLE `qr_code` (
     UNIQUE KEY `uq_qr_code_code` (`code`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci;
+  COLLATE = utf8mb4_unicode_520_ci;

@@ -10,12 +10,10 @@ final class RouterFactory
 {
     use Nette\StaticClass;
 
-    /**
-     * @param string $appDomain Base domain (config parameter %appDomain%); the two app
-     *                          variants are distinguished by subdomain of this domain.
-     */
-    public static function createRouter(string $appDomain): RouteList
+    public static function createRouter(DomainProvider $domainProvider): RouteList
     {
+        $appDomain = $domainProvider->getCurrentDomain();
+
         $router = new RouteList;
 
         // Mini variant: QR redirector on the qr.<appDomain> subdomain.

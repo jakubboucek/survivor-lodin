@@ -1,2 +1,4 @@
-parameters:
-  # appDomain: your-domain.com   # uncomment on production and set your domain here
+database:
+  # dsn: 'mysql:host=;dbname='
+  # user:
+  # password:

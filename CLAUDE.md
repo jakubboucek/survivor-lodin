@@ -77,8 +77,8 @@ doaplikovat novější migrace.
 
 `web/config/local.neon` je **povinný** — `Bootstrap.php` ho načítá **vždy** (ne podmíněně), bez něj
 se aplikace nespustí. Je gitignorovaný; vytváří se zkopírováním verzovaného vzoru
-`web/config/local.sample.neon`. Přepisuje se v něm `appDomain` a DB creds (produkce); pro lokální
-dev stačí defaulty z `common.neon`.
+`web/config/local.sample.neon`. Slouží k per-prostředí override (typicky DB creds na produkci;
+známé domény jsou v `common.neon` jako `knownDomains`). Pro lokální dev stačí defaulty z `common.neon`.
 
 Po čerstvém klonu (detailně v [README.md](README.md)) je potřeba: `composer install` (vendor není
 v gitu), `mkdir -p web/temp web/log` (runtime adresáře nejsou v gitu) a `cp web/config/local.sample.neon
@@ -178,6 +178,8 @@ Jakákoli změna struktury DB (DDL) se zakládá jako **SQL soubor v `/migration
   - `XX` — pořadové číslo v rámci dne, od `00` (pro případ více migrací během jednoho dne),
   - `popis` — krátký popis (anglicky, kebab-case).
   - Příklad: `2026-06-23-00-create-teams-table.sql`.
+- **Kolace:** všechny tabulky a sloupce **vždy `utf8mb4_unicode_520_ci`** (charset `utf8mb4`).
+  V každém `CREATE TABLE` proto `DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_520_ci`.
 - **Transformace dat:** pokud změnu nelze rozumně vyjádřit v SQL (typicky transformace dat),
   použij analogicky **PHP soubor** se stejným pojmenováním (`…-popis.php`) ve stejném adresáři.
 - **Spouštění:** migrace se na serveru **NEspouštějí automaticky** — vše aplikuje obsluha ručně.
@@ -200,17 +202,21 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
 
 ### Routování a subdomény (`App\Core\RouterFactory`)
 
-Router rozlišuje dvě odnože **podle subdomény** základní domény (`%appDomain%` — dev `localhost`,
-produkce přebíjí v `local.neon`):
+Router rozlišuje dvě odnože **podle subdomény**. Aktuální základní doménu určuje
+`App\Core\DomainProvider` z hostu requestu proti seznamu **`%knownDomains%`** (v `common.neon`,
+např. `localhost`, `lodin.fun`, `localhost.bukajuv.net`): když host končí (na hranici labelu)
+některou známou doménou, vrátí ji **bez subdomény** (`qr.lodin.fun` → `lodin.fun`,
+`qr.localhost` → `localhost`); jinak vrátí host beze změny (subdomény pak nefungují, ale app jede).
+Tím detekce funguje napříč prostředími bez per-env přepínání jediné domény.
 
-- **`qr.<appDomain>`** → modul `Redirect`, routa `<code>` (mini odnož = QR přesměrovávač).
-- **`<appDomain>`** (holá) → `admin[/...]` (modul `Admin`) + public catch-all
-  `[<presenter>/[<action>[/<id>]]]` → `Home:default`.
+- **`qr.<doména>`** → modul `Redirect`, routa `<code>` (mini odnož = QR přesměrovávač).
+- **`<doména>`** (holá) → `admin[/...]` (modul `Admin`) + public catch-all
+  `[<presenter>[/<action>[/<id>]]]` → `Home:default`.
 
-Používá se `withDomain()` s relativními routami (zachování portu na devu). Na devu fungují subdomény
-přes **`*.localhost`** — prohlížeč je řeší na loopback nativně, **bez zásahu do `/etc/hosts`**
-(Chrome/Firefox; Safari `*.localhost` neumí). Tedy `qr.localhost:8080/<kód>`, admin
-`localhost:8080/admin`.
+Router (singleton, ale per-request) staví routy přes `withDomain()` s relativními maskami
+(zachování portu na devu). Na devu fungují subdomény přes **`*.localhost`** — prohlížeč je řeší na
+loopback nativně, **bez zásahu do `/etc/hosts`** (Chrome/Firefox; Safari `*.localhost` neumí). Tedy
+`qr.localhost:8080/<kód>`, admin `localhost:8080/admin`.
 
 ### QR přesměrovávač
 
