@@ -135,16 +135,26 @@ final class TeamsPresenter extends BasePresenter
         // Cap at the server's own upload limit (a larger rule would only warn).
         $maxBytes = $this->uploadLimitBytes();
 
+        // Two optional sources: pick an existing file, or shoot one with the camera
+        // (the `capture` attribute on the camera input opens it directly on mobile).
         $form = new Form;
-        $form->addUpload('photo', 'Fotka')
-            ->setRequired('Vyber soubor s fotkou.')
-            ->addRule($form::Image, 'Soubor musí být obrázek (JPEG, PNG, WebP, GIF).')
-            ->addRule($form::MaxFileSize, 'Soubor je příliš velký.', $maxBytes);
+        foreach (['file', 'camera'] as $name) {
+            $form->addUpload($name)
+                ->setRequired(false)
+                ->addRule($form::Image, 'Soubor musí být obrázek (JPEG, PNG, WebP, GIF).')
+                ->addRule($form::MaxFileSize, 'Soubor je příliš velký.', $maxBytes);
+        }
 
         $form->addSubmit('send', 'Nahrát fotku');
         $form->onSuccess[] = function (Form $form, \stdClass $data): void {
+            $upload = $data->camera->hasFile() ? $data->camera : $data->file;
+            if (!$upload->hasFile()) {
+                $form->addError('Vyber soubor, nebo pořiď fotku.');
+                return;
+            }
+
             // Store the new file first, then drop the old one (unique name = fresh URL).
-            $filename = $this->photos->store($data->photo);
+            $filename = $this->photos->store($upload);
             $this->photos->delete($this->editedMember->photo);
             $this->teams->updateMember((int) $this->editedMember->id, ['photo' => $filename]);
 

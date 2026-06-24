@@ -10,15 +10,23 @@
                  alt="" class="size-32 rounded-full bg-base-200 object-cover">
 
             <form n:name="photoForm" class="flex w-full flex-col gap-4">
-                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                <div n:foreach="$form->getErrors() as $error" class="alert alert-error">
                     {$error}
                 </div>
 
                 <label class="form-control">
-                    <span class="label-text mb-1 block">Vyber soubor nebo vyfoť (na mobilu)</span>
-                    {* accept=image/* lets phones offer the camera or the gallery *}
-                    <input n:name="photo" accept="image/*" class="file-input file-input-bordered w-full">
-                    <span class="label-text-alt mt-1 block opacity-60">Fotka se zmenší na čtverec 200 × 200 px.</span>
+                    <span class="label-text mb-1 block">Vybrat fotku ze zařízení</span>
+                    <input n:name="file" accept="image/*" class="file-input file-input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">…nebo rovnou vyfotit</span>
+                    {* capture=environment opens the camera directly on mobile (rear lens) *}
+                    <input n:name="camera" accept="image/*" capture="environment"
+                           class="file-input file-input-bordered w-full">
+                    <span class="label-text-alt mt-1 block opacity-60">
+                        Na mobilu otevře přímo fotoaparát. Fotka se zmenší na čtverec 200 × 200 px.
+                    </span>
                 </label>
 
                 <div class="mt-2 flex items-center gap-2">

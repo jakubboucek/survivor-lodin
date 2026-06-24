@@ -5,6 +5,7 @@ namespace App\Model;
 use Nette\Http\FileUpload;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Image;
+use Nette\Utils\ImageColor;
 use Nette\Utils\Random;
 
 
@@ -28,6 +29,7 @@ final readonly class MemberPhotoStorage
     public function store(FileUpload $file): string
     {
         $image = $file->toImage();
+        $this->applyExifOrientation($image, $file->getTemporaryFile());
         $image->resize(self::Size, self::Size, Image::Cover);
 
         FileSystem::createDir($this->directory);
@@ -35,6 +37,33 @@ final readonly class MemberPhotoStorage
         $image->save($this->directory . '/' . $filename);
 
         return $filename;
+    }
+
+
+    /**
+     * GD (and thus Nette Image) ignores the EXIF orientation tag that phone
+     * cameras set, so a portrait photo would come out rotated. Bake the
+     * orientation into the pixels before resizing. Only JPEG carries the tag.
+     */
+    private function applyExifOrientation(Image $image, string $path): void
+    {
+        if (!function_exists('exif_read_data') || @exif_imagetype($path) !== IMAGETYPE_JPEG) {
+            return;
+        }
+
+        $orientation = @exif_read_data($path)['Orientation'] ?? 1;
+        $bg = ImageColor::rgb(0, 0, 0, 0);
+
+        // imagerotate() rotates counter-clockwise for a positive angle.
+        switch ($orientation) {
+            case 2: $image->flip(IMG_FLIP_HORIZONTAL); break;
+            case 3: $image->rotate(180, $bg); break;
+            case 4: $image->flip(IMG_FLIP_VERTICAL); break;
+            case 5: $image->rotate(-90, $bg); $image->flip(IMG_FLIP_HORIZONTAL); break;
+            case 6: $image->rotate(-90, $bg); break;
+            case 7: $image->rotate(90, $bg); $image->flip(IMG_FLIP_HORIZONTAL); break;
+            case 8: $image->rotate(90, $bg); break;
+        }
     }
 
 
