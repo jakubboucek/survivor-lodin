@@ -9,6 +9,16 @@
 </picture>
 {/define}
 
+{* Faction header box: full-colour cell with a centred silhouette watermark and the
+   team name pinned to the bottom. Shared by the results table and the team cards. *}
+{define teamHeader, array $team, array $theme}
+<div class="relative flex h-20 items-end justify-center overflow-hidden px-4 py-3 {$theme['head']}">
+    <span class="crest-silhouette pointer-events-none absolute inset-0 m-auto h-20 w-20 {$theme['crest']}"
+          style="--crest-src: url(/img/{$team['crest']}-silhouette.svg)" aria-hidden="true"></span>
+    <span class="relative text-base font-bold">{$team['name']}</span>
+</div>
+{/define}
+
 {block content}
 {* Per-team faction colours (full literals so Tailwind detects them):
    head = full-colour header cell, crest = silhouette watermark tone,
@@ -28,14 +38,8 @@
             <thead>
                 <tr class="bg-bark-800 text-parchment-50">
                     <th class="px-4 py-4 text-left align-bottom font-semibold">Hra</th>
-                    <th n:foreach="$teams as $teamKey => $team" class="w-44 p-0 align-bottom {$themes[$teamKey]['head']}">
-                        {* Fixed-height box so the name can sit at the bottom while the silhouette
-                           watermark (absolute, recoloured via mask + currentColor) stays centred. *}
-                        <div class="relative flex h-20 items-end justify-center overflow-hidden px-4 py-3">
-                            <span class="crest-silhouette pointer-events-none absolute inset-0 m-auto h-20 w-20 {$themes[$teamKey]['crest']}"
-                                  style="--crest-src: url(/img/{$team['crest']}-silhouette.svg)" aria-hidden="true"></span>
-                            <span class="relative text-base font-bold">{$team['name']}</span>
-                        </div>
+                    <th n:foreach="$teams as $teamKey => $team" class="w-44 p-0 align-bottom">
+                        {include teamHeader, $team, $themes[$teamKey]}
                     </th>
                 </tr>
             </thead>
@@ -71,6 +75,23 @@
                 </tr>
             </tfoot>
         </table>
+    </div>
+
+    <h2 class="mt-12 text-2xl font-bold text-bark-900 sm:text-3xl">Týmy</h2>
+    <div class="mt-6 grid gap-6 sm:grid-cols-2">
+        <div n:foreach="$teams as $teamKey => $team"
+             class="overflow-hidden rounded-lg border border-bark-300 bg-parchment-50 shadow-sm">
+            {include teamHeader, $team, $themes[$teamKey]}
+            <ul class="divide-y divide-bark-300/50 {$themes[$teamKey]['tint']}">
+                {* Name centred across the row; the optional round photo is taken out of
+                   the flow (absolute, left) so the name stays optically centred either way. *}
+                <li n:foreach="$team['members'] as $member" class="relative px-4 py-3 text-center">
+                    <img n:if="$member['photo']" src="/img/{$member['photo']}" alt=""
+                         class="absolute left-4 top-1/2 size-8 -translate-y-1/2 rounded-full object-cover shadow ring-2 ring-parchment-50">
+                    <span class="font-medium text-bark-900">{$member['name']}</span>
+                </li>
+            </ul>
+        </div>
     </div>
 </section>
 {/block}

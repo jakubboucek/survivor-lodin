@@ -12,9 +12,32 @@ final class TeamsPresenter extends Nette\Application\UI\Presenter
         // Dummy data – to be replaced with a real DB-backed repository.
         // `key` is the internal crest name (medved/srsen); `name` is the real,
         // editable team name (currently a hardcoded placeholder).
+        // `members`: one entry per team member; `photo` is an optional round avatar
+        // (filename under /img/, e.g. 'members/jan.jpg'), null = name only. The crest
+        // files below are just placeholders to demonstrate the avatar slot.
         $teams = [
-            'medved' => ['name' => 'Hrdinové', 'crest' => 'survival-lodin-crest-medved'],
-            'srsen' => ['name' => 'Padouši', 'crest' => 'survival-lodin-crest-srsen'],
+            'medved' => [
+                'name' => 'Hrdinové',
+                'crest' => 'survival-lodin-crest-medved',
+                'members' => [
+                    ['name' => 'Anna Nováková', 'photo' => 'survival-lodin-crest-medved.webp'],
+                    ['name' => 'Petr Svoboda', 'photo' => 'survival-lodin-crest-medved.webp'],
+                    ['name' => 'Klára Dvořáková', 'photo' => null],
+                    ['name' => 'Tomáš Procházka', 'photo' => null],
+                    ['name' => 'Eliška Veselá', 'photo' => null],
+                ],
+            ],
+            'srsen' => [
+                'name' => 'Padouši',
+                'crest' => 'survival-lodin-crest-srsen',
+                'members' => [
+                    ['name' => 'Marek Horák', 'photo' => null],
+                    ['name' => 'Lucie Němcová', 'photo' => null],
+                    ['name' => 'Jakub Pokorný', 'photo' => null],
+                    ['name' => 'Tereza Marková', 'photo' => null],
+                    ['name' => 'Ondřej Kučera', 'photo' => null],
+                ],
+            ],
         ];
 
         // One row per game; `points` holds the score each team earned in it
