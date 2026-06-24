@@ -5,29 +5,29 @@
     <h1 class="text-xl font-bold text-bark-900">Přihlášení do administrace</h1>
 
     <form n:name="signInForm" class="mt-5 flex flex-col gap-4">
-        <div n:foreach="$form->getOwnErrors() as $error" class="rounded-md border border-ember-600 bg-parchment-100 px-3 py-2 text-sm text-ember-600">
+        <div n:foreach="$form->getOwnErrors() as $error" class="rounded-md border border-bark-700 bg-parchment-100 px-3 py-2 text-sm font-medium text-bark-900">
             {$error}
         </div>
 
         <label class="block">
             <span class="mb-1 block text-sm font-semibold text-bark-700">E-mail</span>
             <input n:name="email" autofocus
-                   class="w-full rounded-md border border-bark-300 bg-parchment-50 px-3 py-2 text-bark-900 placeholder-bark-300 focus:border-ember-500 focus:ring-1 focus:ring-ember-500 focus:outline-none">
+                   class="w-full rounded-md border border-bark-300 bg-parchment-50 px-3 py-2 text-bark-900 placeholder-bark-300 focus:border-bark-500 focus:ring-1 focus:ring-bark-500 focus:outline-none">
         </label>
 
         <label class="block">
             <span class="mb-1 block text-sm font-semibold text-bark-700">Heslo</span>
             <input n:name="password"
-                   class="w-full rounded-md border border-bark-300 bg-parchment-50 px-3 py-2 text-bark-900 placeholder-bark-300 focus:border-ember-500 focus:ring-1 focus:ring-ember-500 focus:outline-none">
+                   class="w-full rounded-md border border-bark-300 bg-parchment-50 px-3 py-2 text-bark-900 placeholder-bark-300 focus:border-bark-500 focus:ring-1 focus:ring-bark-500 focus:outline-none">
         </label>
 
         <button n:name="send"
-                class="mt-2 rounded-md bg-ember-600 px-4 py-2 font-semibold text-parchment-50 transition-colors hover:bg-ember-500">
+                class="mt-2 rounded-md bg-bark-700 px-4 py-2 font-semibold text-parchment-50 transition-colors hover:bg-bark-600">
             Přihlásit se
         </button>
     </form>
 </div>
 
 <p class="mt-4 text-center text-sm">
-    <a href="{plink :Home:}" class="text-bark-600 no-underline hover:text-ember-600">← Vrátit se na web</a>
+    <a href="{plink :Home:}" class="text-bark-600 no-underline hover:text-bark-900">← Vrátit se na web</a>
 </p>

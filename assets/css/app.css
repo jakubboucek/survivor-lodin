@@ -10,29 +10,32 @@
    These become utilities automatically (bg-parchment-100, text-bark-900, …).
    --------------------------------------------------------------------------- */
 @theme {
-    /* Parchment – light-yellow page background */
-    --color-parchment-50: #f8f0d8;
-    --color-parchment-100: #f1e7c9;
-    --color-parchment-200: #e7d7ad;
-    --color-parchment-300: #d9c189;
+    /* === Brand paleta (závazné kotvy, viz docs/brand.md) ===================== */
 
-    /* Bark – browns for text, borders and the page frame */
-    --color-bark-300: #b98d5b;
-    --color-bark-500: #8a5a30;
-    --color-bark-600: #6e4524;
-    --color-bark-700: #523219;
-    --color-bark-800: #382010;
-    --color-bark-900: #241409;
-    --color-bark-950: #160c05;
+    /* Survival neutrály – krém (světle žluté pozadí); kotva 100 = brand krém */
+    --color-parchment-50: #f5eedb;
+    --color-parchment-100: #ede3cc; /* brand krém */
+    --color-parchment-200: #ddceac;
+    --color-parchment-300: #cbb789;
 
-    /* Ember – accent (torch flame): links, call-to-action, highlights */
-    --color-ember-400: #d98a3d;
-    --color-ember-500: #c4682b;
-    --color-ember-600: #a44f1d;
+    /* Survival neutrály – dřevo/kůra/uhlová (text, rámy, frame). Kotvy: 600/800/950 */
+    --color-bark-300: #a67d50;
+    --color-bark-500: #835b36;
+    --color-bark-600: #6b4a2b; /* brand dřevo */
+    --color-bark-700: #523823;
+    --color-bark-800: #3e2c1c; /* brand kůra */
+    --color-bark-900: #2a1e14;
+    --color-bark-950: #1e1b16; /* brand uhlová */
 
-    /* Jungle – secondary accent */
-    --color-jungle-600: #5f7138;
-    --color-jungle-700: #495628;
+    /* Frakce Hrdinové (Medvěd) – jen ve frakčním kontextu */
+    --color-hero-400: #4caf50; /* listový akcent */
+    --color-hero-600: #2e7d32; /* lesní zelená */
+    --color-hero-700: #1f5a23;
+
+    /* Frakce Padouši (Sršeň) – jen ve frakčním kontextu */
+    --color-villain-500: #f4b400; /* zlatožlutá */
+    --color-villain-600: #c99500;
+    --color-villain-900: #161616; /* černá */
 
     /* Gentle up-and-down floating (intro logo) → utility: animate-float */
     --animate-float: float 6s ease-in-out infinite;
@@ -57,11 +60,11 @@
     }
 
     a {
-        @apply text-ember-600;
+        @apply text-bark-600;
     }
 
     a:hover {
-        @apply text-ember-500;
+        @apply text-bark-900;
     }
 }
 

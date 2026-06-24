@@ -263,6 +263,11 @@ Správu kódů má `Admin\QrCodes`.
 
 ## Vzhled a layouty (Tailwind v4 + daisyUI)
 
+> **Závazná barevná paleta od vedení je v [docs/brand.md](docs/brand.md)** — dvě frakce
+> (Hrdinové = Medvěd, zelená+krém; Padouši = Sršeň, žlutá+černá) + survival neutrály.
+> **Kódy barev jsou dané a odstín musí přesně sedět.** Současné `@theme` tokeny zatím vycházejí
+> z parchment reference a teprve se na brand sjednotí (viz analýza v `docs/brand.md`).
+
 - **Veřejná část** — „parchment / treasure-map" téma. Barevné tokeny v `assets/css/app.css` přes
   `@theme`: `parchment-*` (světle žluté pozadí), `bark-*` (hnědé: text/rámy), `ember-*` (akcent
   „pochodeň"), `jungle-*`. Hnědý rám kolem stránky řeší třída `.page-frame` (zatím CSS vignette
