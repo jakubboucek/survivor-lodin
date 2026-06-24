@@ -267,6 +267,9 @@ Správu kódů má `Admin\QrCodes`.
   `@theme`: `parchment-*` (světle žluté pozadí), `bark-*` (hnědé: text/rámy), `ember-*` (akcent
   „pochodeň"), `jungle-*`. Hnědý rám kolem stránky řeší třída `.page-frame` (zatím CSS vignette
   placeholder — bude nahrazen `border-image` z dodaného PNG). Forest cover je třída `.forest-cover`.
+  V hlavičce public layoutu (`@layout.latte` i `Sign/@layout.latte`) je místo textu logo
+  (`survival-lodin-logo-primary-transparent-crop.webp`/`.avif`) zmenšené třídou `.site-logo`
+  (responzivní šířka, menší na úzkém displeji). Stejné logo používá i cover (`@cover.latte`).
 - **Administrace** — **daisyUI v5**, jen neutrální `light` téma (`@plugin "daisyui"` v `admin.css`),
   utilitární vzhled bez barviček (`btn`, `table`, `navbar`, `menu`, `badge`…). `<html data-theme="light">`.
 - Konkrétní prvky veřejné části dodává uživatel jako PNG (napojí se průběžně).

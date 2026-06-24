@@ -78,6 +78,19 @@
         box-shadow: inset 0 0 7rem 1.5rem rgb(22 12 5 / 0.65);
     }
 
+    /* Header wordmark logo. Proportional (height follows width via the image's
+       own aspect ratio); smaller on narrow screens, larger from the sm breakpoint. */
+    .site-logo {
+        width: 16rem;
+        height: auto;
+    }
+
+    @media (min-width: 40rem) {
+        .site-logo {
+            width: 26rem;
+        }
+    }
+
     /* Full-page forest cover background (pre-game layout). AVIF with WebP fallback,
        plus a subtle dark overlay so the logo stays legible. Absolute /img path is
        left untouched by Vite (served straight from the document root). */
