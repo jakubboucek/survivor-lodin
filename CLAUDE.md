@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## O projektu
 
-Webová aplikace pro táborovou hru ("Survivor"). Veřejná část zobrazuje dětem statistiky a pořadí
+Webová aplikace pro táborovou hru ("Survival"). Veřejná část zobrazuje dětem statistiky a pořadí
 týmů. Za login-wallem mají pořadatelé přístup k administraci a interním nástrojům.
 
 - **Jazyk rozhraní:** celá aplikace je v **češtině** (UI texty, šablony, hlášky).
@@ -20,6 +20,9 @@ týmů. Za login-wallem mají pořadatelé přístup k administraci a interním 
 - **Nette Framework** (aplikační framework).
 - **MariaDB 10.5** — produkční cíl je 10.5.29; lokální devstack běží na image
   `jakubboucek/lamp-devstack-mysql:10.5`, takže dev i produkce sedí na stejné major verzi.
+- **Frontend:** Vite 6 + **Tailwind CSS v4**. Veřejná část má vlastní „parchment" téma (barevné
+  tokeny v `assets/css/app.css`), administrace používá **daisyUI v5** (`assets/css/admin.css`).
+  Viz sekce *Frontend* a *Vzhled a layouty*.
 
 ## Lokální vývoj (Docker)
 
@@ -62,6 +65,25 @@ Přihlášení: uživatel `root`, heslo `devstack`, databáze `default`.
 docker compose exec mysqldb mysql -uroot -pdevstack default
 ```
 
+**Připojení k DB** je v `web/config/common.neon` (`database: dsn: 'mysql:host=mysqldb;dbname=default'`,
+dev creds root/devstack). Na hostu je k dispozici i **Adminer na http://localhost:8088**
+(server `mysqldb`).
+
+**⚠️ Repo neobsahuje kompletní DB ani dump** a obsahovat nebude — v `/migrations/structures/` jsou
+jen přírůstkové změny struktury. Funkční databázi (data) je nutné získat odjinud, naimportovat a
+doaplikovat novější migrace.
+
+### Konfigurace a první spuštění
+
+`web/config/local.neon` je **povinný** — `Bootstrap.php` ho načítá **vždy** (ne podmíněně), bez něj
+se aplikace nespustí. Je gitignorovaný; vytváří se zkopírováním verzovaného vzoru
+`web/config/local.sample.neon`. Přepisuje se v něm `appDomain` a DB creds (produkce); pro lokální
+dev stačí defaulty z `common.neon`.
+
+Po čerstvém klonu (detailně v [README.md](README.md)) je potřeba: `composer install` (vendor není
+v gitu), `mkdir -p web/temp web/log` (runtime adresáře nejsou v gitu) a `cp web/config/local.sample.neon
+web/config/local.neon`.
+
 ## Adresářová struktura
 
 **Na webhosting se nahrává pouze adresář `web/`** (jeho document root je `web/www`). Zbytek kořene
@@ -72,13 +94,16 @@ survivor-lodin/             # kořen repa = celý projekt (mountuje se do /var/w
 ├── docker-compose.yml      # jen lokální vývoj, na hosting se nenahrává
 ├── .docker/                # data MariaDB (gitignored), nenahrává se
 ├── bin/                    # CLI tooly MIMO hosting – spouští se lokálně v Dockeru (příklad)
-├── assets/                 # FRONTEND zdroje (main.js, SCSS…) – mimo hosting, build na hostu
+├── assets/                 # FRONTEND zdroje – mimo hosting, build na hostu
+│   ├── main.js + css/app.css     # veřejná část (parchment téma)
+│   └── admin.js + css/admin.css  # administrace (daisyUI)
 ├── node_modules/           # npm závislosti (gitignored) – mimo hosting
 ├── package.json            # FE závislosti a scripty (npm run dev/build) – mimo hosting
 ├── vite.config.ts          # konfigurace Vite – mimo hosting
 └── web/                    # << TENTO adresář se nahrává na webhosting
     ├── www/                # DOCUMENT ROOT (jediná veřejně přístupná část)
-    │   └── assets/         # Vite BUILD OUTPUT – VERZOVANÝ v gitu (commituje se, viz Frontend)
+    │   ├── assets/         # Vite BUILD OUTPUT – VERZOVANÝ v gitu (commituje se, viz Frontend)
+    │   └── img/            # statické obrázky (logo, pozadí; WEBP + AVIF) – servírují se z /img/
     ├── app/                # Nette aplikace (presentery, model, šablony) – mimo document root
     ├── config/             # NEON konfigurace
     ├── vendor/             # Composer závislosti (gitignored) – mimo document root
@@ -101,7 +126,15 @@ v kontejneru odpovídá `/var/www/html/web`.
 Frontendový tooling **záměrně leží v kořeni repa, ne ve `web/`** — aby se `node_modules` ani
 zdroje nenahrávaly na hosting. Na webhosting jde jen zbuilděný výstup ve `web/www/assets/`.
 
-- **Zdroje:** `assets/` (entry `assets/main.js`).
+- **Zdroje:** `assets/`. **Dva entry pointy** (`vite.config.ts`: `entry: ['main.js', 'admin.js']`):
+  - `main.js` → `css/app.css` (Tailwind + parchment téma) = **veřejná část**,
+  - `admin.js` → `css/admin.css` (Tailwind + daisyUI) = **administrace**.
+
+  Každá oblast má vlastní CSS bundle; sdílené JS závislosti (`nette-forms`) Vite automaticky vytáhne
+  do společného chunku. Pozn.: Tailwind se mezi CSS soubory nesdílí (generuje se per-oblast podle
+  `@source`).
+- **Statické obrázky:** `web/www/img/` (logo, forest pozadí; varianty WEBP + AVIF). Servírují se
+  přímo z `/img/...` (mimo Vite pipeline) — v CSS přes `image-set()`, v šablonách přes `<picture>`.
 - **Build výstup:** `web/www/assets/` — **záměrně VERZOVANÝ v gitu, není v `.gitignore`**. Důvod:
   na projektu dělá víc lidí a build je napevno svázaný s verzí v gitu, takže při marginální změně
   nemusí nikdo před uploadem buildit. **Po změně čehokoli v `assets/` je proto nutné spustit
@@ -109,6 +142,9 @@ zdroje nenahrávaly na hosting. Na webhosting jde jen zbuilděný výstup ve `we
   `emptyOutDir: true` adresář při každém buildu vyčistí, takže nezůstávají osiřelé hashované
   soubory. Cestu řídí `outDir: '../web/www/assets'` ve `vite.config.ts` (relativně k Vite rootu
   `assets/`).
+- **CI kontrola:** `.github/workflows/assets.yml` při push/PR rebuildne frontend (`npm ci` +
+  `npm run build`) a **selže, pokud se `web/www/assets/` liší od commitnutého** — pojistka, že
+  commitnutý build odpovídá zdrojům.
 - **Node běží na HOSTU, ne v kontejneru** — devstack image je LAMP bez Node. Frontend příkazy
   pouštěj na hostu z kořene repa:
 
@@ -122,7 +158,15 @@ zdroje nenahrávaly na hosting. Na webhosting jde jen zbuilděný výstup ve `we
   path: assets, type: vite`) čte manifest z `web/www/assets/.vite/`. `path: assets` je relativní
   k web rootu (`web/www`), takže **se přesunem zdrojů nemění** — dokud build míří do
   `web/www/assets`, PHP konfigurace zůstává.
-- V šablonách se assety vkládají přes `{asset 'main.js'}` (viz `@layout.latte`).
+- V šablonách se assety vkládají přes `{asset 'main.js'}` (veřejné layouty) resp. `{asset 'admin.js'}`
+  (admin layout). `{asset}` vloží i CSS `<link>` napojené na entry.
+- **Tailwind scan:** Tailwind nečte Latte, jen hrubě skenuje text souborů a hledá literály tříd.
+  Šablony jsou mimo Vite root, proto v CSS musí být `@source "../../web/app/**/*.latte"` (resp. jen
+  `Admin/**` v `admin.css`). Skládané názvy tříd (`text-{$x}`) se nedetekují — používej celé názvy
+  nebo safelist přes `@source inline(...)`.
+- **`tsconfig.json`** (kořen) má `moduleResolution: "bundler"` — bez něj IDE/TS nenajde typy balíčků,
+  co exportují typy jen přes `exports` (např. `@tailwindcss/vite`).
+- **Odsazení:** 4 mezery (PHP/JS/Latte), 2 mezery NEON/YAML — viz `.editorconfig`.
 
 ## Databázové migrace
 
@@ -138,15 +182,51 @@ Jakákoli změna struktury DB (DDL) se zakládá jako **SQL soubor v `/migration
   použij analogicky **PHP soubor** se stejným pojmenováním (`…-popis.php`) ve stejném adresáři.
 - **Spouštění:** migrace se na serveru **NEspouštějí automaticky** — vše aplikuje obsluha ručně.
 
-## Členění aplikace
+## Členění aplikace, layouty a routování
 
-Aplikace má dvě hlavní zóny:
+Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
 
-- **Veřejná část** — statistiky a pořadí týmů, bez přihlášení.
-- **Administrace / nástroje** — za login-wallem pro pořadatele.
+| Zóna | Layout | Popis |
+|------|--------|-------|
+| **Intro** (před hrou) | `@cover.latte` | jen HP — forest pozadí (cover) přes celou stránku + vycentrované houpající se logo |
+| **Veřejná část** (classic) | `@layout.latte` | výchozí pro ostatní public presentery — parchment téma + hnědý rám |
+| **Administrace** | `Admin/@layout.latte` | modul `Admin`, daisyUI, jednoduché horizontální menu |
 
-V Nette to typicky znamená oddělené moduly/presentery (např. `Front` vs. `Admin`) s odlišnou
-autorizací. Konkrétní rozdělení doplň, až bude kód existovat.
+- Cover se nastaví v `HomePresenter::beforeRender()` přes `setLayout('cover')`; admin layout se
+  aplikuje automaticky (leží v adresáři modulu `Admin/`); jinak platí výchozí `@layout.latte`.
+- **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro), `Teams` (ukázkové
+  pořadí) = veřejná část; `Admin\Dashboard`, `Admin\QrCodes` (extends `Admin\BasePresenter` —
+  připravené místo pro budoucí login); `Redirect` = QR přesměrovávač.
+
+### Routování a subdomény (`App\Core\RouterFactory`)
+
+Router rozlišuje dvě odnože **podle subdomény** základní domény (`%appDomain%` — dev `localhost`,
+produkce přebíjí v `local.neon`):
+
+- **`qr.<appDomain>`** → modul `Redirect`, routa `<code>` (mini odnož = QR přesměrovávač).
+- **`<appDomain>`** (holá) → `admin[/...]` (modul `Admin`) + public catch-all
+  `[<presenter>/[<action>[/<id>]]]` → `Home:default`.
+
+Používá se `withDomain()` s relativními routami (zachování portu na devu). Na devu fungují subdomény
+přes **`*.localhost`** — prohlížeč je řeší na loopback nativně, **bez zásahu do `/etc/hosts`**
+(Chrome/Firefox; Safari `*.localhost` neumí). Tedy `qr.localhost:8080/<kód>`, admin
+`localhost:8080/admin`.
+
+### QR přesměrovávač
+
+`Redirect:default(code)` vyhledá cíl přes `App\Model\QrCodeRepository` (tabulka `qr_code`) a udělá
+**302 (dočasné!) přesměrování** — cíl lze v adminu přesměrovat, 301 by se zacachovalo natrvalo.
+Správu kódů má `Admin\QrCodes`.
+
+## Vzhled a layouty (Tailwind v4 + daisyUI)
+
+- **Veřejná část** — „parchment / treasure-map" téma. Barevné tokeny v `assets/css/app.css` přes
+  `@theme`: `parchment-*` (světle žluté pozadí), `bark-*` (hnědé: text/rámy), `ember-*` (akcent
+  „pochodeň"), `jungle-*`. Hnědý rám kolem stránky řeší třída `.page-frame` (zatím CSS vignette
+  placeholder — bude nahrazen `border-image` z dodaného PNG). Forest cover je třída `.forest-cover`.
+- **Administrace** — **daisyUI v5**, jen neutrální `light` téma (`@plugin "daisyui"` v `admin.css`),
+  utilitární vzhled bez barviček (`btn`, `table`, `navbar`, `menu`, `badge`…). `<html data-theme="light">`.
+- Konkrétní prvky veřejné části dodává uživatel jako PNG (napojí se průběžně).
 
 ## Testování webu
 
@@ -156,6 +236,11 @@ Tracy mirroruje výstup do konzole, čti přes `list_console_messages`).
 
 Používej **chrome-devtools-mcp** (vlastní izolovaná instance) — neovlivní cookies/přihlášení
 uživatele v jeho prohlížeči. Rozšíření „Claude in Chrome" jen na výslovné vyžádání.
+
+**Debugging:** při chybě čti **horní výjimku** v Tracy BlueScreen (přes `list_console_messages`),
+ne grepem na tipované řetězce — snadno trefíš druhotný/zavádějící řádek. Pozor: v debug módu se
+**`BadRequestException` (404) navenek vrací jako HTTP 500** (BlueScreen); v produkci je to korektní
+404 přes `Error4xx`.
 
 ## Konvence pro Claude
 

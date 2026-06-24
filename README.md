@@ -1,4 +1,4 @@
-# Survivor Lodín
+# Survival Lodín
 
 Webová aplikace pro táborovou hru. Veřejná část ukazuje dětem statistiky a pořadí týmů, za
 login-wallem mají pořadatelé administraci a interní nástroje. Součástí je i mini odnož –

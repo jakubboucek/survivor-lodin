@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use Nette\Database\Explorer;
+use Nette\Database\Table\Selection;
 
 
 final readonly class QrCodeRepository
@@ -10,6 +11,13 @@ final readonly class QrCodeRepository
     public function __construct(
         private Explorer $explorer,
     ) {
+    }
+
+
+    /** All QR codes, newest-changed first – for the admin listing. */
+    public function findAll(): Selection
+    {
+        return $this->explorer->table('qr_code')->order('code');
     }
 
 

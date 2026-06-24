@@ -1,0 +1,10 @@
+/* Admin entry – Tailwind + daisyUI, kept separate from the public parchment theme.
+   Utilitarian look: only the neutral light theme is enabled. */
+@import "tailwindcss";
+
+@plugin "daisyui" {
+    themes: light --default;
+}
+
+/* daisyUI component classes live in the Admin templates. */
+@source "../../web/app/Presentation/Admin/**/*.latte";

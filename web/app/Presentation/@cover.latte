@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{ifset title}{include title|stripHtml} | {/ifset}Survival Lodín 2026</title>
+    {asset? 'main.js'}
+</head>
+
+<body class="forest-cover min-h-screen">
+    <div class="flex min-h-screen flex-col items-center justify-center px-6 py-10 text-center">
+        <picture>
+            <source srcset="/img/survival-lodin-logo-primary-transparent-crop.avif" type="image/avif">
+            <img
+                src="/img/survival-lodin-logo-primary-transparent-crop.webp"
+                alt="Survival Lodín 2026"
+                class="w-full max-w-md animate-float drop-shadow-2xl motion-reduce:animate-none sm:max-w-lg lg:max-w-xl"
+            >
+        </picture>
+
+        {include content}
+    </div>
+</body>
+</html>

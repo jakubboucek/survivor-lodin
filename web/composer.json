@@ -1,6 +1,6 @@
 {
-    "name": "nette/web-project",
-    "description": "Nette: Standard Web Project",
+    "name": "jakubboucek/survival",
+    "description": "Survival game web built with Nette Framework",
     "license": [
         "MIT",
         "BSD-3-Clause",

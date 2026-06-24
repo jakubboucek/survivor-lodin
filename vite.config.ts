@@ -5,7 +5,7 @@ import nette from '@nette/vite-plugin';
 export default defineConfig({
     plugins: [
         nette({
-            entry: 'main.js',
+            entry: ['main.js', 'admin.js'],
         }),
         tailwindcss(),
     ],

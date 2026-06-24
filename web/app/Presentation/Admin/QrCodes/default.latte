@@ -1,0 +1,35 @@
+{block title}QR kódy{/block}
+
+{block content}
+<h1 class="text-2xl font-bold">QR kódy</h1>
+<p class="mt-1 text-sm opacity-70">Kam směřují jednotlivé QR kódy. Cíl lze později přesměrovat.</p>
+
+<div class="mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Kód</th>
+                <th>Cíl</th>
+                <th>Popis</th>
+                <th>Stav</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$codes as $code">
+                <td class="font-mono">{$code->code}</td>
+                <td class="max-w-xs truncate">
+                    <a href="{$code->target_url}" target="_blank" rel="noopener">{$code->target_url}</a>
+                </td>
+                <td>{$code->label}</td>
+                <td>
+                    <span n:class="badge, 'badge-sm', ($code->is_active ? 'badge-neutral' : 'badge-ghost')">
+                        {$code->is_active ? 'aktivní' : 'neaktivní'}
+                    </span>
+                </td>
+            </tr>
+            <tr n:if="!count($codes)">
+                <td colspan="4" class="text-center opacity-60">Zatím žádné QR kódy.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

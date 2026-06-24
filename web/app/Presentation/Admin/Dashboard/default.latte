@@ -1,0 +1,16 @@
+{block title}Přehled{/block}
+
+{block content}
+<h1 class="text-2xl font-bold">Přehled</h1>
+
+<div class="stats mt-4 border border-base-300 bg-base-100 shadow-sm">
+    <div class="stat">
+        <div class="stat-title">QR kódy</div>
+        <div class="stat-value">{$qrCount}</div>
+        <div class="stat-desc">aktivních i neaktivních</div>
+    </div>
+</div>
+
+<div class="mt-6">
+    <a href="{plink :Admin:QrCodes:}" class="btn">Spravovat QR kódy</a>
+</div>

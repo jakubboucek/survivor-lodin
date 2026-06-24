@@ -23,9 +23,16 @@ final class RouterFactory
         $router->withDomain("qr.$appDomain")
             ->addRoute('<code>', 'Redirect:default');
 
-        // Full application (public part + admin) on the bare <appDomain>.
-        $router->withDomain($appDomain)
-            ->addRoute('<presenter>/<action>[/<id>]', 'Home:default');
+        $app = $router->withDomain($appDomain);
+
+        // Administration under the admin/ prefix (Admin module). Must precede the
+        // public catch-all route below.
+        $app->withModule('Admin')
+            ->addRoute('admin[/<presenter>[/<action>[/<id>]]]', 'Dashboard:default');
+
+        // Public part. Fully-optional segments so default presenter/action collapse
+        // cleanly (avoids a trailing-slash canonical redirect under withDomain).
+        $app->addRoute('[<presenter>[/<action>[/<id>]]]', 'Home:default');
 
         return $router;
     }

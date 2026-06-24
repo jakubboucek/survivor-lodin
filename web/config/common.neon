@@ -3,7 +3,7 @@
 parameters:
   # Base domain used by the router to split the two app variants by subdomain.
   # Dev default = localhost (works via *.localhost in the browser, no /etc/hosts).
-  # Production overrides this in config/local.neon (e.g. survivor-lodin.cz).
+  # Production overrides this in config/local.neon (e.g. survival-lodin.cz).
   appDomain: localhost
 
 

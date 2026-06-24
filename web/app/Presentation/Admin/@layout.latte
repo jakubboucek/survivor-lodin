@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="cs" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{ifset title}{include title|stripHtml} — {/ifset}Administrace · Survival Lodín</title>
+    {asset? 'admin.js'}
+</head>
+
+<body class="min-h-screen bg-base-200">
+    <div class="navbar bg-base-100 shadow-sm">
+        <div class="flex-1">
+            <a href="{plink :Admin:Dashboard:}" class="btn btn-ghost text-lg">Survival Lodín · Admin</a>
+        </div>
+        <div class="flex-none">
+            <ul class="menu menu-horizontal gap-1 px-1">
+                <li>
+                    <a href="{plink :Admin:Dashboard:}" n:class="$presenter->isLinkCurrent(':Admin:Dashboard:*') ? 'menu-active' : null">Přehled</a>
+                </li>
+                <li>
+                    <a href="{plink :Admin:QrCodes:}" n:class="$presenter->isLinkCurrent(':Admin:QrCodes:*') ? 'menu-active' : null">QR kódy</a>
+                </li>
+                <li><a href="{plink :Home:}" target="_blank">Web ↗</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <main class="container mx-auto p-4 sm:p-6">
+        <div n:foreach="$flashes as $flash" n:class="alert, 'mb-4', ($flash->type === 'error' ? 'alert-error' : 'alert-info')">
+            {$flash->message}
+        </div>
+
+        {include content}
+    </main>
+</body>
+</html>
