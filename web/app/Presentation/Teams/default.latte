@@ -1,36 +1,76 @@
-{block title}Pořadí týmů{/block}
+{block title}Výsledková listina{/block}
+
+{* Reusable crest <picture>: full-color logo badge (avif/webp), served from /img/. *}
+{define crest, string $crest, string $alt, string $class}
+<picture>
+    <source srcset="/img/{$crest}.avif" type="image/avif">
+    <source srcset="/img/{$crest}.webp" type="image/webp">
+    <img src="/img/{$crest}.webp" alt="{$alt}" class="{$class}">
+</picture>
+{/define}
 
 {block content}
+{* Per-team faction colours (full literals so Tailwind detects them):
+   head = full-colour header cell, crest = silhouette watermark tone,
+   tint = subtle hue wash on the value column. Keyed by internal crest name. *}
+{var $themes = [
+    'medved' => ['head' => 'bg-hero-600 text-parchment-50', 'crest' => 'text-parchment-50 opacity-30', 'tint' => 'bg-hero-700/10'],
+    'srsen' => ['head' => 'bg-villain-500 text-villain-900', 'crest' => 'text-villain-900 opacity-25', 'tint' => 'bg-villain-500/15'],
+]}
 <section class="mx-auto max-w-3xl">
-    <h1 class="text-3xl font-bold text-bark-900 sm:text-4xl">Pořadí týmů</h1>
+    <h1 class="text-3xl font-bold text-bark-900 sm:text-4xl">Výsledková listina</h1>
     <p class="mt-3 text-bark-700">
-        Aktuální pořadí podle nasbíraných bodů. <span class="italic">(Ukázková data — napojíme na databázi.)</span>
+        Body z jednotlivých her. <span class="italic">(Ukázková data — napojíme na databázi.)</span>
     </p>
 
-    <div class="mt-8 overflow-hidden rounded-lg border border-bark-300 bg-parchment-50 shadow-sm">
-        <table class="w-full text-left">
-            <thead class="bg-bark-800 text-parchment-50">
-                <tr>
-                    <th class="px-4 py-3 font-semibold">#</th>
-                    <th class="px-4 py-3 font-semibold">Tým</th>
-                    <th class="px-4 py-3 text-right font-semibold">Body</th>
+    <div class="mt-8 overflow-x-auto rounded-lg border border-bark-300 bg-parchment-50 shadow-sm">
+        <table class="w-full border-collapse text-center">
+            <thead>
+                <tr class="bg-bark-800 text-parchment-50">
+                    <th class="px-4 py-4 text-left align-bottom font-semibold">Hra</th>
+                    <th n:foreach="$teams as $teamKey => $team" class="w-44 p-0 align-bottom {$themes[$teamKey]['head']}">
+                        {* Fixed-height box so the name can sit at the bottom while the silhouette
+                           watermark (absolute, recoloured via mask + currentColor) stays centred. *}
+                        <div class="relative flex h-20 items-end justify-center overflow-hidden px-4 py-3">
+                            <span class="crest-silhouette pointer-events-none absolute inset-0 m-auto h-20 w-20 {$themes[$teamKey]['crest']}"
+                                  style="--crest-src: url(/img/{$team['crest']}-silhouette.svg)" aria-hidden="true"></span>
+                            <span class="relative text-base font-bold">{$team['name']}</span>
+                        </div>
+                    </th>
                 </tr>
             </thead>
+
             <tbody class="divide-y divide-bark-300/50">
-                <tr n:foreach="$teams as $i => $team" class="transition-colors hover:bg-parchment-100">
-                    <td class="px-4 py-3 font-bold text-bark-600">{$i + 1}.</td>
-                    <td class="px-4 py-3 font-medium text-bark-900">{$team['name']}</td>
-                    <td class="px-4 py-3 text-right tabular-nums text-bark-800">{$team['points']}</td>
+                <tr n:foreach="$games as $game" class="transition-colors hover:bg-parchment-100">
+                    <td class="px-4 py-3 text-left font-medium text-bark-900">{$game['name']}</td>
+                    <td n:foreach="$teams as $teamKey => $team" class="px-4 py-3 {$themes[$teamKey]['tint']}">
+                        {var $points = $game['points'][$teamKey]}
+                        {* flex-nowrap from the sm breakpoint (640px) keeps up to 5 badges on one
+                           line on wider viewports; wrapping is allowed only on narrow screens. *}
+                        <div class="flex min-h-8 flex-wrap items-center justify-center gap-1 sm:flex-nowrap"
+                             aria-label="{$team['name']}: {$points} {$points == 1 ? 'bod' : ($points >= 2 && $points <= 4 ? 'body' : 'bodů')}">
+                            {if $points === 0}
+                                <span class="text-lg text-bark-400" aria-hidden="true">—</span>
+                            {else}
+                                {for $n = 1; $n <= $points; $n++}
+                                    {include crest, $team['crest'], '', 'h-7 w-7 object-contain drop-shadow-[0_2px_2px_rgb(42_30_20/0.55)]'}
+                                {/for}
+                            {/if}
+                        </div>
+                    </td>
                 </tr>
             </tbody>
+
+            <tfoot>
+                <tr class="border-t-2 border-bark-500 bg-parchment-100">
+                    <td class="px-4 py-4 text-left text-lg font-bold text-bark-900">Celkem</td>
+                    <td n:foreach="$teams as $teamKey => $team"
+                        class="px-4 py-4 text-2xl font-bold tabular-nums text-bark-900 {$themes[$teamKey]['tint']}">
+                        {$totals[$teamKey]}
+                    </td>
+                </tr>
+            </tfoot>
         </table>
     </div>
-
-    <div class="mt-8 rounded-lg border border-bark-300 bg-parchment-50 p-5 shadow-sm">
-        <h2 class="text-xl font-bold text-bark-900">Jak se body počítají?</h2>
-        <p class="mt-2 text-bark-700">
-            Týmy získávají body za splněné výzvy a umístění v jednotlivých disciplínách.
-            Ukázka „classic" stylu — karta na pergamenu s hnědým rámem kolem stránky.
-        </p>
-    </div>
 </section>
+{/block}

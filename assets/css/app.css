@@ -107,6 +107,19 @@
         mask-image: radial-gradient(125% 105% at 50% 45%, rgb(0 0 0 / 0.08) 26%, rgb(0 0 0 / 1) 100%);
     }
 
+    /* Recolourable team-crest silhouette. The silhouette SVG is used as a CSS mask,
+       so the shape is painted with the element's own colour (background-color:
+       currentColor) – recolour via any text-* utility, fade via opacity-*, even use
+       a gradient background. Pass the crest file through the --crest-src variable:
+         <span class="crest-silhouette text-parchment-50 opacity-15"
+               style="--crest-src: url(/img/...-silhouette.svg)"></span> */
+    .crest-silhouette {
+        display: inline-block;
+        background-color: currentColor;
+        -webkit-mask: var(--crest-src) center / contain no-repeat;
+        mask: var(--crest-src) center / contain no-repeat;
+    }
+
     /* Header wordmark logo. Proportional (height follows width via the image's
        own aspect ratio); smaller on narrow screens, larger from the sm breakpoint. */
     .site-logo {
