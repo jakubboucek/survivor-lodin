@@ -35,12 +35,15 @@ final readonly class TeamRepository
     }
 
 
-    /** Members of a team, in display order. */
+    /**
+     * Members of a team. Listed alphabetically by name for now – the `sort_order`
+     * column is kept (for a future manual ordering) but ignored in listings.
+     */
     public function findMembers(string $teamCode): Selection
     {
         return $this->explorer->table('team_member')
             ->where('team_code', $teamCode)
-            ->order('sort_order');
+            ->order('name');
     }
 
 

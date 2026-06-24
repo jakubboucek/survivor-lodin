@@ -2,6 +2,7 @@
 
 namespace App\Presentation\Admin\Teams;
 
+use App\Model\MemberPhotoStorage;
 use App\Model\TeamCode;
 use App\Model\TeamRepository;
 use App\Presentation\Admin\BasePresenter;
@@ -11,8 +12,8 @@ use Nette\Database\Table\ActiveRow;
 
 /**
  * Management of the two teams and their members. Team identity (code/crest) is
- * fixed; only the display name is editable. Member photos are NOT handled here –
- * they are uploaded in a separate view (see backlog).
+ * fixed; only the display name is editable. A member's name and photo are edited
+ * separately: the name form here, the photo upload in its own view (editPhoto).
  */
 final class TeamsPresenter extends BasePresenter
 {
@@ -23,6 +24,7 @@ final class TeamsPresenter extends BasePresenter
 
     public function __construct(
         private readonly TeamRepository $teams,
+        private readonly MemberPhotoStorage $photos,
     ) {
         parent::__construct();
     }
@@ -86,13 +88,86 @@ final class TeamsPresenter extends BasePresenter
 
     public function actionDeleteMember(int $id): void
     {
-        if ($this->teams->getMember($id) === null) {
+        $member = $this->teams->getMember($id);
+        if ($member === null) {
             $this->error('Člen nenalezen.');
         }
 
+        $this->photos->delete($member->photo);
         $this->teams->deleteMember($id);
         $this->flashMessage('Člen byl smazán.');
         $this->redirect('default');
+    }
+
+
+    public function actionEditPhoto(int $id): void
+    {
+        $this->editedMember = $this->teams->getMember($id);
+        if ($this->editedMember === null) {
+            $this->error('Člen nenalezen.');
+        }
+    }
+
+
+    public function renderEditPhoto(): void
+    {
+        $this->template->member = $this->editedMember;
+        $this->template->teamDot = TeamCode::from($this->editedMember->team_code)->dot();
+    }
+
+
+    public function actionDeletePhoto(int $id): void
+    {
+        $member = $this->teams->getMember($id);
+        if ($member === null) {
+            $this->error('Člen nenalezen.');
+        }
+
+        $this->photos->delete($member->photo);
+        $this->teams->updateMember($id, ['photo' => null]);
+        $this->flashMessage('Fotka byla odebrána.');
+        $this->redirect('default');
+    }
+
+
+    protected function createComponentPhotoForm(): Form
+    {
+        // Cap at the server's own upload limit (a larger rule would only warn).
+        $maxBytes = $this->uploadLimitBytes();
+
+        $form = new Form;
+        $form->addUpload('photo', 'Fotka')
+            ->setRequired('Vyber soubor s fotkou.')
+            ->addRule($form::Image, 'Soubor musí být obrázek (JPEG, PNG, WebP, GIF).')
+            ->addRule($form::MaxFileSize, 'Soubor je příliš velký.', $maxBytes);
+
+        $form->addSubmit('send', 'Nahrát fotku');
+        $form->onSuccess[] = function (Form $form, \stdClass $data): void {
+            // Store the new file first, then drop the old one (unique name = fresh URL).
+            $filename = $this->photos->store($data->photo);
+            $this->photos->delete($this->editedMember->photo);
+            $this->teams->updateMember((int) $this->editedMember->id, ['photo' => $filename]);
+
+            $this->flashMessage('Fotka byla nahrána.');
+            $this->redirect('default');
+        };
+
+        return $form;
+    }
+
+
+    /** The server's effective upload size limit (php.ini upload_max_filesize) in bytes. */
+    private function uploadLimitBytes(): int
+    {
+        $value = ini_get('upload_max_filesize');
+        $number = (int) $value;
+
+        return match (strtolower(substr($value, -1))) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => $number,
+        };
     }
 
 

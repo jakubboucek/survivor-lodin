@@ -117,9 +117,11 @@ survivor-lodin/             # kořen repa = celý projekt (mountuje se do /var/w
 - **Dev kontejner:** mountuje se celý kořen, proto jsou v Dockeru dostupné i CLI tooly mimo `web/`
   (kvůli jiné verzi PHP na hostu je chceme spouštět v kontejneru).
 
-Mapování v `docker-compose.yml` (zdroj pravdy, neupravovat): kořen repa (`.`) → `/var/www/html`,
+Mapování v `docker-compose.yml`: kořen repa (`.`) → `/var/www/html`,
 `APACHE_DOCUMENT_ROOT` = `/var/www/html/web/www` (odpovídá `web/www`). Hostingovému `web/` tak
-v kontejneru odpovídá `/var/www/html/web`.
+v kontejneru odpovídá `/var/www/html/web`. Dev navíc mountuje **`docker/php/uploads.ini`** do
+PHP `conf.d` (zvedá `upload_max_filesize`/`post_max_size` na 20 MB kvůli fotkám členů — sedí
+na produkční limit). Po změně mountů je nutné `docker compose up -d web` (ne jen `restart`).
 
 ## Frontend (Vite / npm)
 
@@ -195,10 +197,16 @@ Hra má **přesně dva fixní týmy** (počet se nemění). Datový model to vyu
   ENUM sloupci v MariaDB vyžaduje identické definice a ENUM jako PK má ostré hrany — VARCHAR
   PK + FK + `CHECK` dává stejnou garanci čistěji.
 - **`team_member`** — řádek na člena (proměnný počet), FK `team_code` → `team.code`
-  (`ON DELETE CASCADE`). `photo` = volitelný kulatý avatar (NULL = jen jméno). Fotky se
+  (`ON DELETE CASCADE`). `photo` = volitelný kulatý avatar (NULL = jen jméno). **Jméno a fotka
+  se editují odděleně** (jméno ve formuláři, fotka ve vlastním view `editPhoto`). Fotky se
   **nahrávají přes admin** do **gitignorovaného `/web/www/upload/teams/`** (servíruje se z
-  `/upload/teams/<soubor>`) — tedy **mimo verzované `/img/`**, kam patří jen statické assety
-  dodané s kódem. `sort_order` řídí pořadí.
+  `/upload/teams/<soubor>`) — mimo verzované `/img/`. Upload řeší služba
+  **`App\Model\MemberPhotoStorage`** (registrovaná v `services.neon` s cílovým adresářem):
+  zmenší na **200×200 WebP** (Nette `Image::Cover`, originál zahodí), uloží pod **náhodným
+  unikátním názvem** (každá změna = nová URL kvůli cache) a **starý soubor smaže** při výměně
+  i smazání člena. `sort_order` existuje pro budoucí ruční řazení, ale **výpis členů zatím
+  ignoruje a řadí abecedně podle `name`** (`TeamRepository::findMembers`). Bez fotky ukazuje
+  admin placeholder `/img/abstract-user-flat-3.svg`.
 - **`game`** — **denormalizovaná „široká" tabulka výsledků: jeden řádek = jedna hra = výsledek
   obou týmů.** Sloupce `bear_points` / `hornet_points` napevno odpovídají `team.code`. Vědomé
   rozhodnutí (2 fixní týmy, body se zadávají pro oba současně): zjednodušuje SQL i zápis,
@@ -217,6 +225,10 @@ Hra má **přesně dva fixní týmy** (počet se nemění). Datový model to vyu
 vrací basename obrázku (`survival-lodin-crest-medved` / `-srsen`), `pointsColumn()` vrací
 `bear_points` / `hornet_points`. Repository (`TeamRepository`, `GameRepository`) jsou tenké
 (Selection API); reveal/embargo logiku a tvar dat pro šablonu skládá `TeamsPresenter`.
+Veřejná `Teams:default` **schová celou výsledkovou listinu (včetně nadpisu), pokud není ani
+jedna zobrazitelná hra** — zobrazí jen sekci „Týmy"; prázdný tým ukáže řádek „V týmu zatím
+nikdo není.". V adminu rozlišuje týmy barevná tečka **`TeamCode::dot()`** (🟢 Bear / 🟡 Hornet),
+takže fungují i po přejmenování.
 
 První migrace modelu: `2026-06-24-01-create-teams-and-games.sql` (včetně seedu obou týmů).
 

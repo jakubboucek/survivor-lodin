@@ -1,6 +1,7 @@
 services:
   - App\Core\Authenticator
   - App\Core\DomainProvider(%knownDomains%)
+  - App\Model\MemberPhotoStorage(%wwwDir%/upload/teams)
   router: App\Core\RouterFactory::createRouter()
 
 

@@ -1,0 +1,35 @@
+{block title}Fotka člena{/block}
+
+{block content}
+<div class="mx-auto max-w-md">
+    <h1 class="text-2xl font-bold">Fotka · {$teamDot} {$member->name}</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body items-center gap-4">
+            <img src="{$member->photo ? '/upload/teams/' . $member->photo : '/img/abstract-user-flat-3.svg'}"
+                 alt="" class="size-32 rounded-full bg-base-200 object-cover">
+
+            <form n:name="photoForm" class="flex w-full flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Vyber soubor nebo vyfoť (na mobilu)</span>
+                    {* accept=image/* lets phones offer the camera or the gallery *}
+                    <input n:name="photo" accept="image/*" class="file-input file-input-bordered w-full">
+                    <span class="label-text-alt mt-1 block opacity-60">Fotka se zmenší na čtverec 200 × 200 px.</span>
+                </label>
+
+                <div class="mt-2 flex items-center gap-2">
+                    <button n:name="send" class="btn btn-neutral">Nahrát fotku</button>
+                    <a href="{plink default}" class="btn btn-ghost">Zpět</a>
+                    <a n:if="$member->photo" href="{plink deletePhoto, $member->id}"
+                       class="btn btn-ghost ml-auto text-error"
+                       onclick="return confirm('Opravdu odebrat fotku?')">Odebrat fotku</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}

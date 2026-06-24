@@ -10,6 +10,8 @@ services:
         restart: always
         volumes:
             - ".:/var/www/html"
+            # Raise PHP upload limits for member photos (matches production's 20 MB).
+            - "./docker/php/uploads.ini:/usr/local/etc/php/conf.d/zz-uploads.ini:ro"
 
     mysqldb:
         image: jakubboucek/lamp-devstack-mysql:10.5
