@@ -1,21 +1,33 @@
 <!DOCTYPE html>
-<html lang="cs" data-theme="light">
+<html lang="cs">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{ifset title}{include title|stripHtml} — {/ifset}Administrace · Survival Lodín</title>
-    {asset? 'admin.js'}
+    <title>{ifset title}{include title|stripHtml} | {/ifset}Administrace · Survival Lodín 2026</title>
+    {asset? 'main.js'}
 </head>
 
-<body class="min-h-screen bg-base-200">
-    <main class="flex min-h-screen items-center justify-center p-4">
-        <div class="w-full max-w-sm">
-            <div n:foreach="$flashes as $flash" n:class="alert, 'mb-4', ($flash->type === 'error' ? 'alert-error' : 'alert-info')">
-                {$flash->message}
-            </div>
+<body class="page-frame min-h-screen">
+    <div class="mx-auto flex min-h-screen max-w-5xl flex-col px-4 sm:px-6 lg:px-8">
+        <header class="py-5 text-center sm:py-7">
+            <a href="{plink :Home:}" class="text-2xl font-bold text-bark-900 no-underline sm:text-3xl">
+                Survival Lodín <span class="text-ember-600">2026</span>
+            </a>
+        </header>
 
-            {include content}
-        </div>
-    </main>
+        <main class="flex flex-1 items-center justify-center py-2">
+            <div class="w-full max-w-sm">
+                <div n:foreach="$flashes as $flash" n:class="'mb-4 rounded-md border border-bark-300 bg-parchment-50 px-4 py-2', flash, $flash->type">
+                    {$flash->message}
+                </div>
+
+                {include content}
+            </div>
+        </main>
+
+        <footer class="py-5 text-center text-sm text-bark-600">
+            © 2026 Survival Lodín
+        </footer>
+    </div>
 </body>
 </html>
