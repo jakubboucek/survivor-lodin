@@ -3,6 +3,7 @@
 namespace App\Presentation\Admin\Games;
 
 use App\Model\GameRepository;
+use App\Model\TeamCode;
 use App\Model\TeamRepository;
 use App\Presentation\Admin\BasePresenter;
 use Nette\Application\UI\Form;
@@ -90,6 +91,10 @@ final class GamesPresenter extends BasePresenter
                 'played_at' => $this->editedGame->played_at,
                 'published_at' => $this->editedGame->published_at,
             ]);
+        } else {
+            // Prefill the play time with "now"; the user may clear it (then the game
+            // sorts last, by id).
+            $form['played_at']->setDefaultValue(new \DateTimeImmutable());
         }
 
         $form->addSubmit('send', $this->editedGame !== null ? 'Uložit' : 'Vytvořit');
@@ -127,12 +132,16 @@ final class GamesPresenter extends BasePresenter
     }
 
 
-    /** Current display names keyed by team code: ['bear' => …, 'hornet' => …]. */
+    /**
+     * Current display names prefixed with the team's coloured dot, keyed by code:
+     * ['bear' => '🟢 …', 'hornet' => '🟡 …']. The dot distinguishes the teams even
+     * after a rename.
+     */
     private function teamNames(): array
     {
         $names = [];
         foreach ($this->teams->findAllOrdered() as $team) {
-            $names[$team->code] = $team->name;
+            $names[$team->code] = TeamCode::from($team->code)->dot() . ' ' . $team->name;
         }
 
         return $names;

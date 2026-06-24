@@ -205,7 +205,9 @@ Hra má **přesně dva fixní týmy** (počet se nemění). Datový model to vyu
   `SUM()` je triviální, žádné joiny. Cena (3. tým = změna schématu) je zadáním vyloučená.
   - **Nezahraná hra:** `*_points` jsou NULL; `CHECK ((bear_points IS NULL) = (hornet_points
     IS NULL))` vynutí „oba nebo žádný". Veřejně se nezobrazuje.
-  - **`played_at`** = čas odehrání; **řadicí klíč** veřejné listiny (`ORDER BY played_at, id`).
+  - **`played_at`** = čas odehrání; **řadicí klíč** listiny (`ORDER BY played_at IS NULL,
+    played_at, id` — hry bez času jdou na konec, podle `id`). V adminu se nová hra předvyplní
+    aktuálním časem (jde smazat).
   - **`published_at`** = release time výsledků; **NULL = zveřejnit hned**. Embargovaná hra
     (budoucí `published_at`) se na veřejnosti **zobrazí bez skóre** — místo badge je text
     „Výsledky budou vyhlášeny přesně …" přes oba sloupce — a **nepočítá se do součtu**, dokud

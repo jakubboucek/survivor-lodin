@@ -7,7 +7,7 @@
     <div n:foreach="$teams as $team" class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body">
             <div class="flex items-center justify-between">
-                <h2 class="card-title">{$team['row']->name}</h2>
+                <h2 class="card-title">{$team['dot']} {$team['row']->name}</h2>
                 <a href="{plink editTeam, $team['row']->code}" class="btn btn-ghost btn-xs">Přejmenovat</a>
             </div>
 

@@ -32,4 +32,17 @@ enum TeamCode: string
             self::Hornet => 'hornet_points',
         };
     }
+
+
+    /**
+     * Coloured dot identifying the team regardless of its (renameable) display
+     * name – used in the admin where both teams appear together.
+     */
+    public function dot(): string
+    {
+        return match ($this) {
+            self::Bear => '🟢',
+            self::Hornet => '🟡',
+        };
+    }
 }

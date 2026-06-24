@@ -24,14 +24,14 @@ final readonly class GameRepository
     {
         return $this->explorer->table('game')
             ->where('bear_points IS NOT NULL')
-            ->order('played_at, id');
+            ->order('played_at IS NULL, played_at, id');
     }
 
 
-    /** All games, oldest first – for the admin listing. */
+    /** All games for the admin listing; games without a play time go last, by id. */
     public function findAllOrdered(): Selection
     {
-        return $this->explorer->table('game')->order('played_at, id');
+        return $this->explorer->table('game')->order('played_at IS NULL, played_at, id');
     }
 
 

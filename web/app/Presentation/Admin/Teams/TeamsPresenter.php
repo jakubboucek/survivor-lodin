@@ -2,6 +2,7 @@
 
 namespace App\Presentation\Admin\Teams;
 
+use App\Model\TeamCode;
 use App\Model\TeamRepository;
 use App\Presentation\Admin\BasePresenter;
 use Nette\Application\UI\Form;
@@ -33,6 +34,7 @@ final class TeamsPresenter extends BasePresenter
         foreach ($this->teams->findAllOrdered() as $team) {
             $teams[] = [
                 'row' => $team,
+                'dot' => TeamCode::from($team->code)->dot(),
                 'members' => $this->teams->findMembers($team->code)->fetchAll(),
             ];
         }
@@ -53,6 +55,7 @@ final class TeamsPresenter extends BasePresenter
     public function renderEditTeam(): void
     {
         $this->template->editedTeam = $this->editedTeam;
+        $this->template->teamDot = TeamCode::from($this->editedTeam->code)->dot();
     }
 
 
@@ -77,6 +80,7 @@ final class TeamsPresenter extends BasePresenter
     {
         $this->template->editedMember = $this->editedMember;
         $this->template->team = $this->teams->getByCode($this->memberTeamCode);
+        $this->template->teamDot = TeamCode::from($this->memberTeamCode)->dot();
     }
 
 
