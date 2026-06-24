@@ -1,0 +1,27 @@
+{block title}Možnosti{/block}
+
+{block content}
+<div class="mx-auto max-w-md">
+    <h1 class="text-2xl font-bold">Možnosti</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="optionsForm" class="flex flex-col gap-4">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input n:name="game_active" class="checkbox">
+                    <span class="label-text">Aktivovat hru</span>
+                </label>
+
+                <p class="text-sm opacity-60">
+                    <strong>Vypnuto:</strong> úvodní stránka zobrazuje intro.<br>
+                    <strong>Zapnuto:</strong> úvodní stránka přesměruje na výsledkovou listinu (<code>/teams</code>).
+                </p>
+
+                <div class="mt-2">
+                    <button n:name="send" class="btn btn-neutral">Uložit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}

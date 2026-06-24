@@ -246,11 +246,18 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
 
 - Cover se nastaví v `HomePresenter::beforeRender()` přes `setLayout('cover')`; admin layout se
   aplikuje automaticky (leží v adresáři modulu `Admin/`); jinak platí výchozí `@layout.latte`.
-- **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro), `Teams` (veřejná
-  výsledková listina + rostery týmů, z DB) = veřejná část; `Sign` (login/logout, mimo modul
-  Admin, vlastní layout); `Admin\Dashboard`, `Admin\QrCodes`, `Admin\Users`, `Admin\Teams`
-  (názvy týmů + správa členů), `Admin\Games` (CRUD her/výsledků) — vše extends
-  `Admin\BasePresenter` = login-wall; `Redirect` = QR přesměrovávač.
+- **`Home` má přepínač `game_active`** (viz níže): vypnuto = zobrazí intro (cover); zapnuto =
+  `actionDefault()` přesměruje na `:Teams:`.
+- **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro / redirect), `Teams`
+  (veřejná výsledková listina + rostery týmů, z DB) = veřejná část; `Sign` (login/logout, mimo
+  modul Admin, vlastní layout); `Admin\Dashboard`, `Admin\QrCodes`, `Admin\Users`, `Admin\Teams`
+  (názvy týmů + správa členů + fotky), `Admin\Games` (CRUD her/výsledků), `Admin\Options`
+  (možnosti aplikace) — vše extends `Admin\BasePresenter` = login-wall; `Redirect` = QR přesměrovávač.
+
+**Možnosti / nastavení:** key-value tabulka **`setting`** (`name` PK, `value` string) +
+**`SettingRepository`** (`get`/`set` + typové helpery jako `isGameActive()`/`setGameActive()`).
+Spravuje `Admin\Options`. První volba `game_active` (`'0'`/`'1'`, default `0`); migrace
+`2026-06-24-02-create-setting-table.sql`.
 
 ### Přihlášení do administrace (login-wall)
 
