@@ -1,6 +1,7 @@
 services:
-  router: App\Core\RouterFactory::createRouter()
+  - App\Core\Authenticator
   - App\Core\DomainProvider(%knownDomains%)
+  router: App\Core\RouterFactory::createRouter()
 
 
 search:

@@ -1,0 +1,41 @@
+{block title}Správci{/block}
+
+{block content}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Správci</h1>
+    <a href="{plink edit}" class="btn btn-neutral btn-sm">Přidat správce</a>
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Přezdívka</th>
+                <th>E-mail</th>
+                <th>Stav</th>
+                <th class="text-right">Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$users as $admin">
+                <td class="font-medium">{$admin->nick}</td>
+                <td>{$admin->email}</td>
+                <td>
+                    <span n:class="badge, 'badge-sm', ($admin->is_active ? 'badge-neutral' : 'badge-ghost')">
+                        {$admin->is_active ? 'aktivní' : 'neaktivní'}
+                    </span>
+                </td>
+                <td class="text-right">
+                    <a href="{plink edit, $admin->id}" class="btn btn-ghost btn-xs">Upravit</a>
+                    <a n:if="$admin->id !== $user->getId()"
+                       href="{plink delete, $admin->id}"
+                       class="btn btn-ghost btn-xs text-error"
+                       onclick="return confirm('Opravdu smazat tohoto správce?')">Smazat</a>
+                </td>
+            </tr>
+            <tr n:if="!count($users)">
+                <td colspan="4" class="text-center opacity-60">Zatím žádní správci.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

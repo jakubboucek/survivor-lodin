@@ -1,0 +1,42 @@
+{block title}{$editedUser ? 'Úprava správce' : 'Nový správce'}{/block}
+
+{block content}
+<div class="mx-auto max-w-md">
+    <h1 class="text-2xl font-bold">{$editedUser ? 'Úprava správce' : 'Nový správce'}</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="userForm" class="flex flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">E-mail</span>
+                    <input n:name="email" class="input input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Přezdívka</span>
+                    <input n:name="nick" class="input input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Heslo</span>
+                    <input n:name="password" class="input input-bordered w-full">
+                    <span n:if="$editedUser" class="label-text-alt mt-1 block opacity-60">Vyplň jen pokud chceš heslo změnit.</span>
+                </label>
+
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input n:name="is_active" class="checkbox">
+                    <span class="label-text">Aktivní účet</span>
+                </label>
+
+                <div class="mt-2 flex gap-2">
+                    <button n:name="send" class="btn btn-neutral">{$editedUser ? 'Uložit' : 'Vytvořit'}</button>
+                    <a href="{plink default}" class="btn btn-ghost">Zpět</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

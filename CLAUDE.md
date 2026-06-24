@@ -197,8 +197,45 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
 - Cover se nastaví v `HomePresenter::beforeRender()` přes `setLayout('cover')`; admin layout se
   aplikuje automaticky (leží v adresáři modulu `Admin/`); jinak platí výchozí `@layout.latte`.
 - **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro), `Teams` (ukázkové
-  pořadí) = veřejná část; `Admin\Dashboard`, `Admin\QrCodes` (extends `Admin\BasePresenter` —
-  připravené místo pro budoucí login); `Redirect` = QR přesměrovávač.
+  pořadí) = veřejná část; `Sign` (login/logout, mimo modul Admin, vlastní layout);
+  `Admin\Dashboard`, `Admin\QrCodes`, `Admin\Users` (extends `Admin\BasePresenter` = login-wall);
+  `Redirect` = QR přesměrovávač.
+
+### Přihlášení do administrace (login-wall)
+
+Celý modul `Admin` je za login-wallem. Mechanismus stojí na `nette/security`:
+
+- **`Admin\BasePresenter::startup()`** kontroluje `$user->isLoggedIn()`; nepřihlášeného přesměruje
+  na `:Sign:in` s `backlink` (přes `storeRequest()`/`restoreRequest()`). Každý chráněný admin
+  presenter proto **musí** dědit z `BasePresenter`.
+- **`Sign` presenter** (`App\Presentation\Sign\SignPresenter`) řeší login (`in`) a logout (`out`).
+  Je **mimo modul Admin** (je to brána, ne chráněná stránka) a dědí z holého
+  `Nette\Application\UI\Presenter`. Má **vlastní minimální layout** (`Sign/@layout.latte`,
+  vycentrovaná karta, daisyUI přes `admin.js`). URL je `/sign/in` resp. `/sign/out`.
+  Odhlášení je v adminu schované v dropdownu pod přezdívkou (poslední položka horního menu).
+- **`App\Core\Authenticator`** (implementuje `Nette\Security\Authenticator`, registrován v
+  `services.neon`) ověřuje **e-mail + heslo** proti tabulce `admin_user`. Hesla se hashují přes
+  `Nette\Security\Passwords` (bcrypt); neaktivní účet (`is_active = 0`) se nepřihlásí
+  (`NotApproved`). Do identity ukládá `nick` a `email` (nick se zobrazuje v navbaru).
+- **Tabulka `admin_user`** (`App\Model\AdminUserRepository`): `email` (unique, login), `password`
+  (hash), `nick` (zobrazované jméno), `is_active`, časové sloupce. Repository hesla nehashuje —
+  hashování dělá volající (Authenticator při rehashi, `Admin\Users` při zadání hesla).
+- **`Admin\Users` presenter** = správa správců (list / create / edit / delete). Edit umožňuje
+  **změnit heslo bez znalosti původního** (políčko Heslo; prázdné = ponechat). Smazání vlastního
+  účtu je blokované. Žádný reset hesla e-mailem apod. — vědomě jednoduché.
+- **Založení prvního správce:** CLI tool `bin/create-admin.php` (mimo hosting, spouští se v dev
+  kontejneru z kořene repa):
+
+  ```bash
+  docker compose exec -w /var/www/html web php bin/create-admin.php <email> <nick> <heslo>
+  ```
+
+  Když e-mail existuje, jen aktualizuje heslo/nick a účet (re)aktivuje. Na produkci se admin zakládá
+  stejným toolem ručně.
+- **Testovací účet pro Claude (jen lokální dev):** e-mail `claude@test.local`, heslo `claude-dev-pw`
+  (nick „Claude"). Slouží Claudovi k ověřování adminu v dev kontejneru. **Nikdy ho nezakládej na
+  produkci.** Když v lokální DB chybí, vytvoř ho znovu:
+  `docker compose exec -w /var/www/html web php bin/create-admin.php claude@test.local Claude claude-dev-pw`.
 
 ### Routování a subdomény (`App\Core\RouterFactory`)
 

@@ -12,7 +12,7 @@
         <div class="flex-1">
             <a href="{plink :Admin:Dashboard:}" class="btn btn-ghost text-lg">Survival Lodín · Admin</a>
         </div>
-        <div class="flex-none">
+        <div class="flex-none" n:if="$user->isLoggedIn()">
             <ul class="menu menu-horizontal gap-1 px-1">
                 <li>
                     <a href="{plink :Admin:Dashboard:}" n:class="$presenter->isLinkCurrent(':Admin:Dashboard:*') ? 'menu-active' : null">Přehled</a>
@@ -20,7 +20,18 @@
                 <li>
                     <a href="{plink :Admin:QrCodes:}" n:class="$presenter->isLinkCurrent(':Admin:QrCodes:*') ? 'menu-active' : null">QR kódy</a>
                 </li>
+                <li>
+                    <a href="{plink :Admin:Users:}" n:class="$presenter->isLinkCurrent(':Admin:Users:*') ? 'menu-active' : null">Správci</a>
+                </li>
                 <li><a href="{plink :Home:}" target="_blank">Web ↗</a></li>
+                <li>
+                    <details>
+                        <summary>{$user->getIdentity()->nick}</summary>
+                        <ul class="right-0 z-1 w-44 rounded-t-none bg-base-100 p-2 shadow">
+                            <li><a href="{plink :Sign:out}">Odhlásit</a></li>
+                        </ul>
+                    </details>
+                </li>
             </ul>
         </div>
     </div>

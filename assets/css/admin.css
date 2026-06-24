@@ -6,5 +6,7 @@
     themes: light --default;
 }
 
-/* daisyUI component classes live in the Admin templates. */
+/* daisyUI component classes live in the Admin templates and the Sign (login) page,
+   which shares this bundle (loads admin.js). */
 @source "../../web/app/Presentation/Admin/**/*.latte";
+@source "../../web/app/Presentation/Sign/**/*.latte";
