@@ -259,10 +259,12 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
 - **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro / redirect), `Teams`
   (veřejná výsledková listina + rostery týmů, z DB) = veřejná část; `Sign` (login/logout, mimo
   modul Admin, vlastní layout); `Unlock` (veřejná brána s heslem pro chráněné odkazy, mimo modul
-  Admin, parchment layout jako Sign — viz Zkracovač odkazů); `Admin\Dashboard`, `Admin\Links`
-  (zkracovač odkazů + QR), `Admin\Users`, `Admin\Teams` (názvy týmů + správa členů + fotky),
-  `Admin\Games` (CRUD her/výsledků), `Admin\Options` (možnosti aplikace) — vše extends
-  `Admin\BasePresenter` = login-wall; `Redirect` = přesměrovávač zkrácených odkazů.
+  Admin, parchment layout jako Sign — viz Zkracovač odkazů); `File` (veřejné servírování
+  nahraných souborů, mimo modul Admin, bez layoutu — viz Soubory); `Admin\Dashboard`, `Admin\Links`
+  (zkracovač odkazů + QR), `Admin\Files` (soubory ke stažení/zobrazení), `Admin\Users`,
+  `Admin\Teams` (názvy týmů + správa členů + fotky), `Admin\Games` (CRUD her/výsledků),
+  `Admin\Options` (možnosti aplikace) — vše extends `Admin\BasePresenter` = login-wall;
+  `Redirect` = přesměrovávač zkrácených odkazů.
 
 **Možnosti / nastavení:** key-value tabulka **`setting`** (`name` PK, `value` string) +
 **`SettingRepository`** (`get`/`set` + typové helpery jako `isGameActive()`/`setGameActive()`).
@@ -354,6 +356,38 @@ Tabulka **`shortlink`** (dřív `qr_code`, přejmenováno migrací `2026-06-25-0
   (cross-origin `download` atribut prohlížeče ignorují, proto proxy). QR kóduje absolutní short-link
   URL (`link('//:Redirect:default')`). **Veřejný redirect na goqr.me nezávisí** — když je API dole,
   přesměrování jede dál, jen admin neukáže/nestáhne QR.
+
+### Soubory (file server)
+
+Sourozenec zkracovače: místo přesměrování aplikace **sama zobrazí nahraný soubor** (typicky
+PDF/obrázek se zadáním). Tabulka **`file`** (migrace `2026-06-25-02-…`): `slug` (VARCHAR(191),
+unique, **smí lomítka**), `storage_name` (název na disku), `download_name` (do Content-Disposition,
+editovatelné), `mime_type` (editovatelné), `size`, `title`, `is_active`. Model
+**`App\Model\FileRepository`** (thin Selection API + `generateUniqueSlug()` / `isSlugTaken()`;
+`insert()` vrací `ActiveRow`, protože presenter potřebuje nové `id` pro redirect).
+
+- **Úložiště:** **`/web/data/files/`** = **mimo document root** (na rozdíl od fotek členů ve
+  `web/www/upload/teams`), takže se servíruje **jen přes PHP**, ne přímo web serverem. Gitignored
+  (`/web/data/`) a v `.deployment.php` v `ignore` (jinak by deploy s `allowDelete` smazal serverové
+  soubory). Službu řeší **`App\Model\FileStorage`** (registrovaná v `services.neon` s
+  `%appDir%/../data/files`): `store()` přesune upload (`FileUpload::move()`, **bez resize**) pod
+  uspořádaný **`<Y-m-d>-<title>-<nonce>.<ext>`** (přes `Strings::webalize`, `<ext>` z původního
+  názvu) a vrátí storage_name; `delete()` maže; `path()` vrací absolutní cestu pro `FileResponse`.
+- **Veřejné servírování: `File:default(slug, download=false)`** (hlavní doména, routa
+  `soubor/<slug .+>` v `RouterFactory` **před** public catch-all; bez layoutu) najde aktivní soubor
+  přes `findActive()` a pošle **`Nette\Application\Responses\FileResponse`** s `download_name` +
+  `mime_type`. **Výchozí `inline`** (zobrazí v prohlížeči), **`?download=1`** → `attachment`.
+  Vždy přidá hlavičku **`X-Content-Type-Options: nosniff`** (uživatelský obsah ve vlastním originu).
+  MIME i Content-Disposition jdou **jen z DB metadat**; storage název je nonce → žádný path traversal.
+- **Správa: `Admin\Files`** (sekce „Soubory") = CRUD. **Dvoufázové zakládání:** create formulář má
+  jen `title` + `slug` + `file`; po uploadu redirect do **editu**, kde už upload není, jen metadata
+  (`download_name`, `mime_type`, `is_active`). Při vytvoření se `download_name`/`mime_type`/`size`
+  **detekují z uploadu** (`FileUpload::getUntrustedName()` / `getContentType()` přes finfo).
+- **Výměna souboru:** akce `replace` (samostatný formulář jen s uploadem). **Vždy** uloží nový a
+  smaže starý (i při změně typu — odpovědnost uživatele). Pokud se nový `download_name`/`mime_type`
+  **liší** od stávajících, redirect na **`confirmMeta`** (změněné hodnoty v **URL parametrech**) =
+  varovný formulář s radio volbami (**default = převzít nové**); jinak rovnou zpět do editu. Když
+  uživatel `confirmMeta` neodešle, **zůstanou stará metadata** u nového souboru (vědomě jednoduché).
 
 ## Vzhled a layouty (Tailwind v4 + daisyUI)
 

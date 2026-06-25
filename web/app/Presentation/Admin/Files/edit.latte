@@ -1,0 +1,77 @@
+{block title}{$editedFile ? 'Úprava souboru' : 'Nový soubor'}{/block}
+
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li><a href="{plink :Admin:Files:}">Soubory</a></li>
+<li>{$editedFile ? 'Úprava souboru' : 'Nový soubor'}</li>
+{/block}
+
+{block content}
+<div class="mx-auto max-w-lg">
+    <h1 class="text-2xl font-bold">{$editedFile ? 'Úprava souboru' : 'Nový soubor'}</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="fileForm" class="flex flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Název</span>
+                    <input n:name="title" class="input input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Adresa (slug)</span>
+                    <input n:name="slug" class="input input-bordered w-full font-mono">
+                    <span class="label-text-alt mt-1 block opacity-60">Prázdné = vygeneruje se náhodná. Lomítka povolena (víc segmentů cesty).</span>
+                </label>
+
+                {if !$editedFile}
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Soubor</span>
+                    <input n:name="file" class="file-input file-input-bordered w-full">
+                    <span class="label-text-alt mt-1 block opacity-60">Po nahrání se odvodí název ke stažení a typ – půjdou pak upravit.</span>
+                </label>
+                {else}
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Název souboru ke stažení</span>
+                    <input n:name="download_name" class="input input-bordered w-full">
+                    <span class="label-text-alt mt-1 block opacity-60">Použije se v hlavičce Content-Disposition.</span>
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Typ (MIME)</span>
+                    <input n:name="mime_type" class="input input-bordered w-full font-mono">
+                </label>
+
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input n:name="is_active" class="checkbox">
+                    <span class="label-text">Aktivní</span>
+                </label>
+                {/if}
+
+                <div class="mt-2 flex gap-2">
+                    <button n:name="send" class="btn btn-neutral">{$editedFile ? 'Uložit' : 'Vytvořit a pokračovat'}</button>
+                    <a href="{plink default}" class="btn btn-ghost">Zpět</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div n:if="$editedFile" class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">Soubor</h2>
+
+            <a href="{$publicUrl}" target="_blank" rel="noopener" class="font-mono text-sm break-all opacity-70 hover:opacity-100">{$publicUrl}</a>
+
+            <div class="mt-2 flex flex-wrap gap-2">
+                <a href="{$publicUrl}" target="_blank" rel="noopener" class="btn btn-neutral btn-sm">Zobrazit</a>
+                <a href="{$publicUrl}?download=1" class="btn btn-ghost btn-sm">Stáhnout</a>
+                <a href="{plink replace, $editedFile->id}" class="btn btn-ghost btn-sm">Vyměnit soubor</a>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}

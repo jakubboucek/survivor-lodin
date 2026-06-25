@@ -29,6 +29,11 @@ final class RouterFactory
         $app->withModule('Admin')
             ->addRoute('admin[/<presenter>[/<action>[/<id>]]]', 'Dashboard:default');
 
+        // Public file server under /soubor/<slug>. `<slug .+>` allows slashes (multi
+        // segment paths). Must precede the public catch-all below, which would
+        // otherwise swallow it as presenter/action/id.
+        $app->addRoute('soubor/<slug .+>', 'File:default');
+
         // Public part. Fully-optional segments so default presenter/action collapse
         // cleanly (avoids a trailing-slash canonical redirect under withDomain).
         $app->addRoute('[<presenter>[/<action>[/<id>]]]', 'Home:default');

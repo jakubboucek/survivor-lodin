@@ -23,6 +23,7 @@ return [
             /composer.lock
             /latte-lint
             /config/local.neon
+            /data/
             /log/
             /temp/
             /test/

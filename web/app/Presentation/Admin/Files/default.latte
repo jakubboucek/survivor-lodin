@@ -1,0 +1,48 @@
+{block title}Soubory{/block}
+
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li>Soubory</li>
+{/block}
+
+{block content}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Soubory</h1>
+    <a href="{plink edit}" class="btn btn-neutral btn-sm">Přidat soubor</a>
+</div>
+<p class="mt-1 text-sm opacity-70">Nahrané soubory se hráčům zobrazují na adrese <span class="font-mono">/soubor/&lt;slug&gt;</span>.</p>
+
+<div class="mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Slug</th>
+                <th>Název souboru</th>
+                <th>Typ</th>
+                <th>Stav</th>
+                <th class="text-right">Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$files as $file">
+                <td class="font-mono">{$file->slug}</td>
+                <td>{$file->download_name}</td>
+                <td class="font-mono text-xs opacity-70">{$file->mime_type}</td>
+                <td>
+                    <span n:class="badge, 'badge-sm', ($file->is_active ? 'badge-neutral' : 'badge-ghost')">
+                        {$file->is_active ? 'aktivní' : 'neaktivní'}
+                    </span>
+                </td>
+                <td class="text-right">
+                    <a href="{plink edit, $file->id}" class="btn btn-ghost btn-xs">Upravit</a>
+                    <a href="{plink delete, $file->id}" class="btn btn-ghost btn-xs text-error"
+                       onclick="return confirm('Opravdu smazat tento soubor?')">Smazat</a>
+                </td>
+            </tr>
+            <tr n:if="!count($files)">
+                <td colspan="5" class="text-center opacity-60">Zatím žádné soubory.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{/block}

@@ -1,0 +1,35 @@
+{block title}Vyměnit soubor{/block}
+
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li><a href="{plink :Admin:Files:}">Soubory</a></li>
+<li><a href="{plink edit, $editedFile->id}">{$editedFile->title}</a></li>
+<li>Vyměnit soubor</li>
+{/block}
+
+{block content}
+<div class="mx-auto max-w-lg">
+    <h1 class="text-2xl font-bold">Vyměnit soubor</h1>
+    <p class="mt-1 text-sm opacity-70">Nahraný soubor nahradí stávající obsah. Pokud se bude lišit název nebo typ, zeptáme se na metadata.</p>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="replaceForm" class="flex flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Nový soubor</span>
+                    <input n:name="file" class="file-input file-input-bordered w-full">
+                </label>
+
+                <div class="mt-2 flex gap-2">
+                    <button n:name="send" class="btn btn-neutral">Nahradit soubor</button>
+                    <a href="{plink edit, $editedFile->id}" class="btn btn-ghost">Zpět</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}
