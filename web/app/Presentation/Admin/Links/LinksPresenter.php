@@ -114,6 +114,11 @@ final class LinksPresenter extends BasePresenter
             ->setRequired(false)
             ->setHtmlAttribute('placeholder', 'prázdné = bez hesla');
 
+        $form->addTextArea('challenge', 'Text na obrazovce s heslem')
+            ->setRequired(false)
+            ->setHtmlAttribute('rows', 3)
+            ->setHtmlAttribute('placeholder', 'Volitelný víceřádkový text (zadání / nápověda).');
+
         $form->addCheckbox('is_active', 'Aktivní')
             ->setDefaultValue(true);
 
@@ -122,6 +127,7 @@ final class LinksPresenter extends BasePresenter
                 'target_url' => $this->editedLink->target_url,
                 'code' => $this->editedLink->code,
                 'password' => $this->editedLink->password,
+                'challenge' => $this->editedLink->challenge,
                 'label' => $this->editedLink->label,
                 'is_active' => (bool) $this->editedLink->is_active,
             ]);
@@ -152,6 +158,7 @@ final class LinksPresenter extends BasePresenter
             'code' => $code,
             'target_url' => $data->target_url,
             'password' => $password !== '' ? $password : null,
+            'challenge' => trim((string) $data->challenge) ?: null,
             'label' => trim((string) $data->label) ?: null,
             'is_active' => $data->is_active,
         ];

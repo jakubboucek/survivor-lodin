@@ -40,6 +40,9 @@ final class UnlockPresenter extends Nette\Application\UI\Presenter
         if ($link->password === null) {
             $this->redirectUrl($link->target_url, Nette\Http\IResponse::S302_Found);
         }
+
+        // Optional multi-line challenge text shown above the password form.
+        $this->template->challenge = $link->challenge;
     }
 
 

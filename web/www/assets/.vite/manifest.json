@@ -4,7 +4,7 @@
     "name": "netteForms"
   },
   "admin.js": {
-    "file": "admin-dp-_MIp6.js",
+    "file": "admin-Bg3_SeLz.js",
     "name": "admin",
     "src": "admin.js",
     "isEntry": true,
@@ -12,11 +12,11 @@
       "_netteForms-DYxo5p2d.js"
     ],
     "css": [
-      "admin-DepINTUA.css"
+      "admin-Dl3tOqrm.css"
     ]
   },
   "main.js": {
-    "file": "main-BvlUr9IP.js",
+    "file": "main-BGpa9rsY.js",
     "name": "main",
     "src": "main.js",
     "isEntry": true,
@@ -24,7 +24,7 @@
       "_netteForms-DYxo5p2d.js"
     ],
     "css": [
-      "main-DvTLdjVE.css"
+      "main-DpZoEsSn.css"
     ]
   }
 }

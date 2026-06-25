@@ -3,7 +3,12 @@
 {block content}
 <div class="rounded-lg border-2 border-bark-700 bg-parchment-50 p-6 shadow-lg shadow-bark-900/20 sm:p-8">
     <h1 class="text-xl font-bold text-bark-900">Tento odkaz je pod heslem</h1>
-    <p class="mt-1 text-sm text-bark-600">Zadej heslo a budeš přesměrován dál.</p>
+
+    {if $challenge !== null}
+        <p n:if="$challenge !== null" class="mt-2 text-bark-800">{$challenge|breakLines}</p>
+    {else}
+        <p class="mt-2 text-sm text-bark-600">Zadej heslo, jinak se k pokladu nedostaneš.</p>
+    {/if}
 
     <form n:name="unlockForm" class="mt-5 flex flex-col gap-4">
         <div n:foreach="$form->getOwnErrors() as $error" class="rounded-md border-2 border-red-600 bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-800">
