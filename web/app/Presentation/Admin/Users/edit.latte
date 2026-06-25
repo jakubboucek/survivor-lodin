@@ -1,5 +1,11 @@
 {block title}{$editedUser ? 'Úprava správce' : 'Nový správce'}{/block}
 
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li><a href="{plink :Admin:Users:}">Správci</a></li>
+<li>{$editedUser ? 'Úprava správce' : 'Nový správce'}</li>
+{/block}
+
 {block content}
 <div class="mx-auto max-w-md">
     <h1 class="text-2xl font-bold">{$editedUser ? 'Úprava správce' : 'Nový správce'}</h1>

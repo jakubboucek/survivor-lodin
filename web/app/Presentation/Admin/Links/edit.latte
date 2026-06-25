@@ -1,5 +1,11 @@
 {block title}{$editedLink ? 'Úprava odkazu' : 'Nový odkaz'}{/block}
 
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li><a href="{plink :Admin:Links:}">Odkazy</a></li>
+<li>{$editedLink ? 'Úprava odkazu' : 'Nový odkaz'}</li>
+{/block}
+
 {block content}
 <div class="mx-auto max-w-lg">
     <h1 class="text-2xl font-bold">{$editedLink ? 'Úprava odkazu' : 'Nový odkaz'}</h1>
