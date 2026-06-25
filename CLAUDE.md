@@ -258,9 +258,11 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
   `actionDefault()` přesměruje na `:Teams:`.
 - **Presentery** (mapping `App\Presentation\*\**Presenter`): `Home` (intro / redirect), `Teams`
   (veřejná výsledková listina + rostery týmů, z DB) = veřejná část; `Sign` (login/logout, mimo
-  modul Admin, vlastní layout); `Admin\Dashboard`, `Admin\QrCodes`, `Admin\Users`, `Admin\Teams`
-  (názvy týmů + správa členů + fotky), `Admin\Games` (CRUD her/výsledků), `Admin\Options`
-  (možnosti aplikace) — vše extends `Admin\BasePresenter` = login-wall; `Redirect` = QR přesměrovávač.
+  modul Admin, vlastní layout); `Unlock` (veřejná brána s heslem pro chráněné odkazy, mimo modul
+  Admin, parchment layout jako Sign — viz Zkracovač odkazů); `Admin\Dashboard`, `Admin\Links`
+  (zkracovač odkazů + QR), `Admin\Users`, `Admin\Teams` (názvy týmů + správa členů + fotky),
+  `Admin\Games` (CRUD her/výsledků), `Admin\Options` (možnosti aplikace) — vše extends
+  `Admin\BasePresenter` = login-wall; `Redirect` = přesměrovávač zkrácených odkazů.
 
 **Možnosti / nastavení:** key-value tabulka **`setting`** (`name` PK, `value` string) +
 **`SettingRepository`** (`get`/`set` + typové helpery jako `isGameActive()`/`setGameActive()`).
@@ -312,7 +314,9 @@ některou známou doménou, vrátí ji **bez subdomény** (`qr.lodin.fun` → `l
 `qr.localhost` → `localhost`); jinak vrátí host beze změny (subdomény pak nefungují, ale app jede).
 Tím detekce funguje napříč prostředími bez per-env přepínání jediné domény.
 
-- **`qr.<doména>`** → modul `Redirect`, routa `<code>` (mini odnož = QR přesměrovávač).
+- **`qr.<doména>`** → modul `Redirect`, routa **`<code .+>`** (mini odnož = přesměrovávač). Maska
+  `.+` schválně **povolí lomítka** → slug může mít víc segmentů cesty (ne jen první segment).
+  Query string není součástí kódu.
 - **`<doména>`** (holá) → `admin[/...]` (modul `Admin`) + public catch-all
   `[<presenter>[/<action>[/<id>]]]` → `Home:default`.
 
@@ -321,11 +325,35 @@ Router (singleton, ale per-request) staví routy přes `withDomain()` s relativn
 loopback nativně, **bez zásahu do `/etc/hosts`** (Chrome/Firefox; Safari `*.localhost` neumí). Tedy
 `qr.localhost:8080/<kód>`, admin `localhost:8080/admin`.
 
-### QR přesměrovávač
+> **Dev caveat (cross-host odkazy):** generování **absolutního odkazu mezi subdoménami** (např.
+> `qr.localhost` → `localhost` u password bounce, nebo admin → `qr.localhost` u QR dat) na devu
+> **ztrácí port `:8080`** (Nette omezení pro nestandardní porty napříč hosty). Funkce je tím
+> dotčená **jen na devu**; produkce běží na standardních portech (80/443), takže je korektní.
 
-`Redirect:default(code)` vyhledá cíl přes `App\Model\QrCodeRepository` (tabulka `qr_code`) a udělá
-**302 (dočasné!) přesměrování** — cíl lze v adminu přesměrovat, 301 by se zacachovalo natrvalo.
-Správu kódů má `Admin\QrCodes`.
+### Zkracovač odkazů (shortlink) + QR přesměrovávač
+
+Tabulka **`shortlink`** (dřív `qr_code`, přejmenováno migrací `2026-06-25-00-…`): `code` = slug
+(VARCHAR(191), unique, **smí obsahovat lomítka**), `target_url`, volitelné **plaintext** `password`,
+`label`, `is_active`. Interně je to **zkracovač odkazů**; QR kódy jsou nadstavba. Model
+**`App\Model\ShortlinkRepository`** (thin Selection API + `generateUniqueCode()` / `isCodeTaken()`).
+
+- **`Redirect:default(code)`** (qr subdoména, žádný layout/assety) najde aktivní odkaz přes
+  `findActive()`. Bez hesla → **302 (dočasné!)** na `target_url` (301 by se zacachovalo natrvalo).
+  S heslem → **302 na `//:Unlock:default`** (hlavní doména) se slugem v query — qr subdoména
+  zůstává „light", formulář s heslem běží v parchment stylu na hlavní doméně.
+- **`Unlock:default(code)`** (mimo modul Admin, vlastní `Unlock/@layout.latte` jako Sign) zobrazí
+  formulář na heslo; po správném zadání (`hash_equals`) → 302 na cíl. **Heslo je herní mechanika,
+  ne security-grade** — ukládá se plaintextem schválně, aby ho admin mohl sdílet.
+- **Správa: `Admin\Links`** (sekce „Odkazy") = CRUD. Slug lze nechat prázdný (vygeneruje se
+  náhodný, base36 6 znaků) nebo zadat vlastní (povolené znaky `[\w\-/.]+`). Edit ukazuje **QR
+  náhled + tlačítka Stáhnout PNG/SVG**.
+- **QR obrázky:** **`App\Model\QrImageService`** přes externí API **goqr.me**
+  (`api.qrserver.com/v1/create-qr-code/`). `imageUrl()` = přímé `<img src>` (náhled, žádný server
+  fetch). Stahování řeší **proxy akce `Admin\Links::actionDownload`** — `fetch()` (cURL, **vyžaduje
+  `ext-curl` + odchozí HTTP z hostingu**) stáhne 1000×1000 PNG/SVG a pošle s `Content-Disposition`
+  (cross-origin `download` atribut prohlížeče ignorují, proto proxy). QR kóduje absolutní short-link
+  URL (`link('//:Redirect:default')`). **Veřejný redirect na goqr.me nezávisí** — když je API dole,
+  přesměrování jede dál, jen admin neukáže/nestáhne QR.
 
 ## Vzhled a layouty (Tailwind v4 + daisyUI)
 

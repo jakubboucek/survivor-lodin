@@ -2,14 +2,14 @@
 
 namespace App\Presentation\Admin\Dashboard;
 
-use App\Model\QrCodeRepository;
+use App\Model\ShortlinkRepository;
 use App\Presentation\Admin\BasePresenter;
 
 
 final class DashboardPresenter extends BasePresenter
 {
     public function __construct(
-        private readonly QrCodeRepository $qrCodes,
+        private readonly ShortlinkRepository $shortlinks,
     ) {
         parent::__construct();
     }
@@ -17,6 +17,6 @@ final class DashboardPresenter extends BasePresenter
 
     public function renderDefault(): void
     {
-        $this->template->qrCount = $this->qrCodes->findAll()->count('*');
+        $this->template->linkCount = $this->shortlinks->findAll()->count('*');
     }
 }

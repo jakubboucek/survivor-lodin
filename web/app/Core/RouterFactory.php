@@ -16,10 +16,11 @@ final class RouterFactory
 
         $router = new RouteList;
 
-        // Mini variant: QR redirector on the qr.<appDomain> subdomain.
-        // Short single-segment code keeps the encoded QR small.
+        // Mini variant: short-link redirector on the qr.<appDomain> subdomain.
+        // `<code .+>` lets the slug span multiple path segments (slashes allowed);
+        // the query string is intentionally not part of the code.
         $router->withDomain("qr.$appDomain")
-            ->addRoute('<code>', 'Redirect:default');
+            ->addRoute('<code .+>', 'Redirect:default');
 
         $app = $router->withDomain($appDomain);
 

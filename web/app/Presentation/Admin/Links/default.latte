@@ -1,0 +1,48 @@
+{block title}Odkazy{/block}
+
+{block content}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Odkazy</h1>
+    <a href="{plink edit}" class="btn btn-neutral btn-sm">Přidat odkaz</a>
+</div>
+<p class="mt-1 text-sm opacity-70">Zkracovač odkazů s QR kódy. Cíl lze později kdykoli přesměrovat.</p>
+
+<div class="mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Slug</th>
+                <th>Cíl</th>
+                <th>Popis</th>
+                <th>Stav</th>
+                <th class="text-right">Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$links as $link">
+                <td class="font-mono">
+                    {$link->code}
+                    <span n:if="$link->password !== null" class="badge badge-ghost badge-sm" title="Pod heslem">🔒</span>
+                </td>
+                <td class="max-w-xs truncate">
+                    <a href="{$link->target_url}" target="_blank" rel="noopener">{$link->target_url}</a>
+                </td>
+                <td>{$link->label}</td>
+                <td>
+                    <span n:class="badge, 'badge-sm', ($link->is_active ? 'badge-neutral' : 'badge-ghost')">
+                        {$link->is_active ? 'aktivní' : 'neaktivní'}
+                    </span>
+                </td>
+                <td class="text-right">
+                    <a href="{plink edit, $link->id}" class="btn btn-ghost btn-xs">Upravit</a>
+                    <a href="{plink delete, $link->id}" class="btn btn-ghost btn-xs text-error"
+                       onclick="return confirm('Opravdu smazat tento odkaz?')">Smazat</a>
+                </td>
+            </tr>
+            <tr n:if="!count($links)">
+                <td colspan="5" class="text-center opacity-60">Zatím žádné odkazy.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{/block}

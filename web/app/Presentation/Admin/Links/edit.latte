@@ -1,0 +1,66 @@
+{block title}{$editedLink ? 'Úprava odkazu' : 'Nový odkaz'}{/block}
+
+{block content}
+<div class="mx-auto max-w-lg">
+    <h1 class="text-2xl font-bold">{$editedLink ? 'Úprava odkazu' : 'Nový odkaz'}</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="linkForm" class="flex flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Popis</span>
+                    <input n:name="label" class="input input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Cílová adresa (URL)</span>
+                    <input n:name="target_url" class="input input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Vlastní adresa (slug)</span>
+                    <input n:name="code" class="input input-bordered w-full font-mono">
+                    <span class="label-text-alt mt-1 block opacity-60">Prázdné = vygeneruje se náhodná. Lomítka povolena (víc segmentů cesty).</span>
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Heslo</span>
+                    <input n:name="password" class="input input-bordered w-full">
+                    <span class="label-text-alt mt-1 block opacity-60">Prázdné = odkaz bez hesla. Ukládá se v čitelné podobě, abys ho mohl sdílet.</span>
+                </label>
+
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input n:name="is_active" class="checkbox">
+                    <span class="label-text">Aktivní</span>
+                </label>
+
+                <div class="mt-2 flex gap-2">
+                    <button n:name="send" class="btn btn-neutral">{$editedLink ? 'Uložit' : 'Vytvořit'}</button>
+                    <a href="{plink default}" class="btn btn-ghost">Zpět</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div n:if="$editedLink" class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body items-center text-center">
+            <h2 class="card-title">QR kód</h2>
+
+            <a href="{$shortUrl}" target="_blank" rel="noopener" class="font-mono text-sm break-all opacity-70 hover:opacity-100">{$shortUrl}</a>
+
+            <img src="{$qrPreviewUrl}" alt="QR kód odkazu" width="300" height="300"
+                 class="mt-2 rounded-box border border-base-300 bg-white p-2">
+
+            <div class="mt-2 flex gap-2">
+                <a href="{plink download, id: $editedLink->id, format: 'png'}" class="btn btn-neutral btn-sm">Stáhnout PNG</a>
+                <a href="{plink download, id: $editedLink->id, format: 'svg'}" class="btn btn-neutral btn-sm">Stáhnout SVG</a>
+            </div>
+            <p class="mt-1 text-xs opacity-60">QR generuje externí služba goqr.me.</p>
+        </div>
+    </div>
+</div>
+{/block}

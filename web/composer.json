@@ -13,6 +13,7 @@
     ],
     "require": {
         "php": ">= 8.5",
+        "ext-curl": "*",
         "ext-exif": "*",
         "ext-gd": "*",
         "latte/latte": "^3.1",

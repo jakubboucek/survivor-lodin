@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{ifset title}{include title|stripHtml} | {/ifset}Survival Lodín 2026</title>
+    {include '../@icons.latte'}
+    {asset? 'main.js'}
+</head>
+
+<body class="page-frame min-h-screen">
+    <div class="mx-auto flex min-h-screen max-w-5xl flex-col px-4 sm:px-6 lg:px-8">
+        <header class="py-5 text-center sm:py-7">
+            <a href="{plink :Home:}" class="inline-block">
+                <picture>
+                    <source srcset="/img/survival-lodin-logo-primary-transparent-crop.avif" type="image/avif">
+                    <img src="/img/survival-lodin-logo-primary-transparent-crop.webp" alt="Survival Lodín 2026" class="site-logo">
+                </picture>
+            </a>
+        </header>
+
+        <main class="flex flex-1 items-center justify-center py-2">
+            <div class="w-full max-w-sm">
+                <div n:foreach="$flashes as $flash" n:class="'mb-4 rounded-md border border-bark-300 bg-parchment-50 px-4 py-2', flash, $flash->type">
+                    {$flash->message}
+                </div>
+
+                {include content}
+            </div>
+        </main>
+
+        <footer class="py-5 text-center text-sm text-bark-600">
+            © 2026 Survival Lodín
+        </footer>
+    </div>
+</body>
+</html>
