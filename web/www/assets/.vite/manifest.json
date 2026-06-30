@@ -4,19 +4,22 @@
     "name": "netteForms"
   },
   "admin.js": {
-    "file": "admin-Da3eJ9Ui.js",
+    "file": "admin-Ce1-P6ja.js",
     "name": "admin",
     "src": "admin.js",
     "isEntry": true,
     "imports": [
       "_netteForms-DYxo5p2d.js"
     ],
+    "dynamicImports": [
+      "morse/index.js"
+    ],
     "css": [
-      "admin-B5Mh2N3A.css"
+      "admin-DqdzeJUc.css"
     ]
   },
   "main.js": {
-    "file": "main-DH2FUhu-.js",
+    "file": "main-BNb5rjdX.js",
     "name": "main",
     "src": "main.js",
     "isEntry": true,
@@ -24,7 +27,13 @@
       "_netteForms-DYxo5p2d.js"
     ],
     "css": [
-      "main-Bm1pAQIA.css"
+      "main-CSXiC7Cw.css"
     ]
+  },
+  "morse/index.js": {
+    "file": "index-CKl3IBYt.js",
+    "name": "index",
+    "src": "morse/index.js",
+    "isDynamicEntry": true
   }
 }
