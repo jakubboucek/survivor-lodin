@@ -261,7 +261,8 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
   modul Admin, vlastní layout); `Unlock` (veřejná brána s heslem pro chráněné odkazy, mimo modul
   Admin, parchment layout jako Sign — viz Zkracovač odkazů); `File` (veřejné servírování
   nahraných souborů, mimo modul Admin, bez layoutu — viz Soubory); `Admin\Dashboard`, `Admin\Links`
-  (zkracovač odkazů + QR), `Admin\Files` (soubory ke stažení/zobrazení), `Admin\Users`,
+  (zkracovač odkazů + QR), `Admin\Files` (soubory ke stažení/zobrazení),
+  `Admin\Morse` (generátor Morseova kódu — viz níže), `Admin\Users`,
   `Admin\Teams` (názvy týmů + správa členů + fotky), `Admin\Games` (CRUD her/výsledků),
   `Admin\Options` (možnosti aplikace) — vše extends `Admin\BasePresenter` = login-wall;
   `Redirect` = přesměrovávač zkrácených odkazů.
@@ -388,6 +389,47 @@ editovatelné), `mime_type` (editovatelné), `size`, `title`, `is_active`. Model
   **liší** od stávajících, redirect na **`confirmMeta`** (změněné hodnoty v **URL parametrech**) =
   varovný formulář s radio volbami (**default = převzít nové**); jinak rovnou zpět do editu. Když
   uživatel `confirmMeta` neodešle, **zůstanou stará metadata** u nového souboru (vědomě jednoduché).
+
+### Generátor Morseova kódu (Admin\Morse)
+
+Nástroj pro pořadatele: převede text na **zvukovou nahrávku v Morseově kódu** (WAV), kterou
+nahrajeme na virtuální telefonní ústřednu — děti si pro kód volají a luští ho sluchem. **Generování
+zvuku je 100% klientské** (žádný backend pro audio): tóny přes **Web Audio API**, render přes
+**`OfflineAudioContext`**, WAV hlavička skládaná ručně v JS. Výstup je **napevno 8 kHz / mono /
+16-bit PCM** (formát telefonní sítě G.711, neexponuje se uživateli).
+
+- **PHP část je tenká:** `Admin\Morse` jen vyrenderuje stránku a nabízí **mini JSON API pro
+  pojmenované presety**. Tabulka **`morse_preset`** (`id`, `name`, `data` TEXT, timestamps; migrace
+  `2026-06-30-00-…`) + **`MorsePresetRepository`** (thin Selection API). `data` je **neprůhledný
+  JSON blob** — server ho nezkoumá, jen `Json::encode`/`decode` proxy. Akce vrací JSON přes
+  `sendJson`, chyby přes `$this->error(...)` (v debug módu 500, v produkci korektní 4xx — JS čte
+  jen `res.ok`).
+  - **Routy (id je path segment, NE query!):** `presets` (GET, seznam `{id,name}`), `preset/<id>`
+    (GET, jeden preset s dekódovaným `data`), `save-preset/<id>` (POST `{data}`, přepis),
+    `create-preset` (POST `{name,data}` → `{id,name}`). Protože `<id>` je placeholder admin routy
+    `admin[/<presenter>[/<action>[/<id>]]]`, **`?id=` se nenamapuje** — `presets-api.js` proto
+    skládá id do cesty. Šablona předává base URL přes `data-url-*` atributy (`{link presets}` atd.).
+- **Frontend modul `assets/morse/`** (lazy-loaded — `admin.js` ho dynamicky importuje jen když na
+  stránce existuje `#morse-app`, ať heavy audio kód není ve zbytku adminu):
+  - `config.js` — **`DEFAULT_PRESET` = jediný zdroj pravdy** pro výchozí hodnoty + `PARAMS`
+    (definice sliderů: key/label/unit/min/max/step), `DEBOUNCE_MS`, `SAMPLE_RATE`, `clampParam()`.
+    Z Defaultu se odvozuje prvotní stav i **merge base** (chybějící klíče v uloženém presetu se
+    doplní → nikdy `undefined`).
+  - `text.js` — `textToMorse()`: NFD strip diakritiky → uppercase → sloučení whitespace na jednu
+    mezeru slov → mapování. A–Z a 0–9 mají kódy, **basic-ASCII interpunkce (≤ 0x7E) se ignoruje**,
+    cokoli dál (emoji…) → **Error** (UI hlášku zobrazí, negeneruje).
+  - `audio.js` — `renderMorseWav(words, params)`: `buildTimeline` → `OfflineAudioContext` (jeden
+    oscilátor na tón ⇒ **konzistentní fáze sinusu / „lupanec"**), gain envelope (fade-in/out, při
+    0 ms ostrý nástup = rytmický prvek), pak ruční **16-bit PCM WAV** → `Blob`.
+  - `presets-api.js` — fetch wrappery (`list`/`load`/`save`/`create`).
+  - `index.js` — controller: staví slidery z `PARAMS`, **autoplay** (checkbox; změna parametru →
+    debounce `DEBOUNCE_MS`, generuj+přehraj; **změna textu autoplay NESPOUŠTÍ**), **localStorage**
+    perzistence (`morse.settings`, má přednost před serverem), presety (Načíst/Uložit/Uložit jako…;
+    **„Default" je read-only, jen v JS, není v DB** — „Uložit" nad ním spadne na „Uložit jako…").
+    Nová generace ruší přehrávání a **uvolní starý Blob URL** (`revokeObjectURL`). Názvy presetů se
+    renderují přes `textContent` (escape; do DB raw).
+- **Tailwind scan:** protože část UI (slidery) staví JS, `admin.css` má navíc
+  `@source "../morse/**/*.js"` — jinak by se daisyUI/utility třídy z JS literálů nevygenerovaly.
 
 ## Vzhled a layouty (Tailwind v4 + daisyUI)
 

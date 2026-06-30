@@ -1,0 +1,80 @@
+{block title}Generátor Morseova kódu{/block}
+
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li>Morse</li>
+{/block}
+
+{block content}
+<h1 class="text-2xl font-bold">Generátor Morseova kódu</h1>
+<p class="mt-1 text-sm opacity-70">
+    Převede text na zvukovou nahrávku v Morseově kódu (WAV, 8&nbsp;kHz / mono / 16&nbsp;bit – formát pro
+    telefonní ústřednu). Vše běží v prohlížeči; na server se ukládají jen pojmenované presety.
+</p>
+
+<div id="morse-app" class="mt-4 flex flex-col gap-4"
+     data-url-list="{link presets}"
+     data-url-load="{link preset}"
+     data-url-save="{link savePreset}"
+     data-url-create="{link createPreset}">
+
+    <noscript>
+        <div class="alert alert-warning">Generátor vyžaduje zapnutý JavaScript.</div>
+    </noscript>
+
+    {* Text + player *}
+    <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body gap-4">
+            <label class="form-control">
+                <span class="label-text mb-1 block">Text k převedení</span>
+                <textarea id="morse-text" rows="3" class="textarea textarea-bordered w-full"
+                          placeholder="Např. AHOJ 123"></textarea>
+                <span class="label-text-alt mt-1 block opacity-60">
+                    Diakritika se ořízne, číslice se podporují, běžná interpunkce se ignoruje.
+                    Neznámý znak (např. emoji) vyhodí chybu.
+                </span>
+            </label>
+
+            <div id="morse-error" class="alert alert-error hidden"></div>
+            <div id="morse-status" class="alert alert-success hidden"></div>
+
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="morse-generate" type="button" class="btn btn-neutral">Generuj</button>
+                <a id="morse-download" class="btn btn-ghost btn-sm hidden" download="morse.wav">Stáhnout WAV</a>
+            </div>
+
+            <audio id="morse-audio" controls class="w-full"></audio>
+        </div>
+    </div>
+
+    {* Settings *}
+    <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body gap-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <h2 class="card-title">Nastavení</h2>
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input id="morse-autoplay" type="checkbox" class="checkbox">
+                    <span class="label-text">Přehrát automaticky při změně nastavení</span>
+                </label>
+            </div>
+
+            {* Presets *}
+            <div class="flex flex-wrap items-end gap-2">
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Preset</span>
+                    <select id="morse-preset-select" class="select select-bordered min-w-48"></select>
+                </label>
+                <button id="morse-preset-load" type="button" class="btn btn-sm">Načíst</button>
+                <button id="morse-preset-save" type="button" class="btn btn-sm">Uložit</button>
+                <button id="morse-preset-saveas" type="button" class="btn btn-sm">Uložit jako…</button>
+            </div>
+
+            <div class="divider my-0"></div>
+
+            {* Parameter sliders are built by JS from the Default preset (the single
+               source of truth for parameters and their bounds). *}
+            <div id="morse-params" class="flex flex-col gap-3"></div>
+        </div>
+    </div>
+</div>
+{/block}

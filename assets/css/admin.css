@@ -6,5 +6,7 @@
     themes: light --default;
 }
 
-/* daisyUI component classes live in the Admin templates. */
+/* daisyUI component classes live in the Admin templates… */
 @source "../../web/app/Presentation/Admin/**/*.latte";
+/* …and the Morse generator builds part of its UI from JS, so scan it too. */
+@source "../morse/**/*.js";
