@@ -34,6 +34,10 @@ final class RouterFactory
         // otherwise swallow it as presenter/action/id.
         $app->addRoute('soubor/<slug .+>', 'File:default');
 
+        // Public IVR endpoint for the ODORIK exchange under /ivr/<code>. `<code .+>` allows
+        // slashes; must precede the public catch-all below.
+        $app->addRoute('ivr/<code .+>', 'Ivr:default');
+
         // Public part. Fully-optional segments so default presenter/action collapse
         // cleanly (avoids a trailing-slash canonical redirect under withDomain).
         $app->addRoute('[<presenter>[/<action>[/<id>]]]', 'Home:default');

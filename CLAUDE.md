@@ -260,9 +260,11 @@ Aplikace má **tři vizuální režimy (layouty)** v `web/app/Presentation/`:
   (veřejná výsledková listina + rostery týmů, z DB) = veřejná část; `Sign` (login/logout, mimo
   modul Admin, vlastní layout); `Unlock` (veřejná brána s heslem pro chráněné odkazy, mimo modul
   Admin, parchment layout jako Sign — viz Zkracovač odkazů); `File` (veřejné servírování
-  nahraných souborů, mimo modul Admin, bez layoutu — viz Soubory); `Admin\Dashboard`, `Admin\Links`
-  (zkracovač odkazů + QR), `Admin\Files` (soubory ke stažení/zobrazení),
-  `Admin\Morse` (generátor Morseova kódu — viz níže), `Admin\Users`,
+  nahraných souborů, mimo modul Admin, bez layoutu — viz Soubory); `Ivr` (veřejný endpoint pro
+  ústřednu ODORIK, mimo modul Admin, bez layoutu, text/plain — viz IVR); `Admin\Dashboard`,
+  `Admin\Links` (zkracovač odkazů + QR), `Admin\Files` (soubory ke stažení/zobrazení),
+  `Admin\Morse` (generátor Morseova kódu — viz níže), `Admin\Ivr` (IVR endpointy pro ústřednu
+  + log hovorů — viz níže), `Admin\Users`,
   `Admin\Teams` (názvy týmů + správa členů + fotky), `Admin\Games` (CRUD her/výsledků),
   `Admin\Options` (možnosti aplikace) — vše extends `Admin\BasePresenter` = login-wall;
   `Redirect` = přesměrovávač zkrácených odkazů.
@@ -320,8 +322,10 @@ Tím detekce funguje napříč prostředími bez per-env přepínání jediné d
 - **`qr.<doména>`** → modul `Redirect`, routa **`<code .+>`** (mini odnož = přesměrovávač). Maska
   `.+` schválně **povolí lomítka** → slug může mít víc segmentů cesty (ne jen první segment).
   Query string není součástí kódu.
-- **`<doména>`** (holá) → `admin[/...]` (modul `Admin`) + public catch-all
-  `[<presenter>[/<action>[/<id>]]]` → `Home:default`.
+- **`<doména>`** (holá) → `admin[/...]` (modul `Admin`), `soubor/<slug .+>` (`File`),
+  `ivr/<code .+>` (`Ivr` — endpoint ústředny, viz IVR) + public catch-all
+  `[<presenter>[/<action>[/<id>]]]` → `Home:default`. Specifické routy (`soubor/`, `ivr/`)
+  musí být **před** catch-all, jinak je spolkne jako presenter/action/id.
 
 Router (singleton, ale per-request) staví routy přes `withDomain()` s relativními maskami
 (zachování portu na devu). Na devu fungují subdomény přes **`*.localhost`** — prohlížeč je řeší na
@@ -432,6 +436,39 @@ zvuku je 100% klientské** (žádný backend pro audio): tóny přes **Web Audio
     renderují přes `textContent` (escape; do DB raw).
 - **Tailwind scan:** protože část UI (slidery) staví JS, `admin.css` má navíc
   `@source "../morse/**/*.js"` — jinak by se daisyUI/utility třídy z JS literálů nevygenerovaly.
+
+### IVR endpoint pro ústřednu ODORIK (Admin\Ivr)
+
+Obsluha hovorů pro **VOIP ústřednu ODORIK.cz**, která umí volat web (vzdálené řízení IVR —
+[dokumentace](https://www.odorik.cz/w/ivr:vzdalene_rizeni_pres_web)). Ústředna při hovoru zavolá
+náš endpoint, ten porovná zadaný DTMF s konfigurací a vrátí **text/plain** s příkazy ústředny
+(jeden na řádek: `answer`, `play:URL/ID`, `dial:`, `hangup`, `uri:`…). Endpoint je **veřejný, bez
+autentizace** (ústředna se nepřihlašuje).
+
+- **Dynamické endpointy:** každý je samostatná „sada" v adminu = vlastní URL + konfigurace.
+  Tabulka **`ivr_endpoint`** (migrace `2026-07-01-00-…`): `code` (VARCHAR(191), unique, **smí
+  lomítka**), `label`, `expected_dtmf`, `response_correct`/`response_incorrect` (MEDIUMTEXT, těla
+  text/plain zadaná v adminu přes textarea), `is_active`. Model **`App\Model\IvrEndpointRepository`**
+  (thin Selection API + `generateUniqueCode()` / `isCodeTaken()`, jako shortlink/file).
+- **Veřejné servírování: `Ivr:default(code)`** (hlavní doména, routa `ivr/<code .+>` v
+  `RouterFactory` **před** public catch-all; bez layoutu). Najde aktivní endpoint přes `findActive()`,
+  porovná GET parametr **`dtmf`** s `expected_dtmf` (**přesná shoda po `trim()`**; chybějící/prázdný
+  dtmf = neshoda) a pošle `TextResponse` s `Content-Type: text/plain; charset=UTF-8`. Při shodě
+  `response_correct`, jinak `response_incorrect`. **Neznámý/neaktivní kód → 404** (v debug módu
+  BlueScreen 500, viz Debugging) — ale **i tak se zaloguje** (`endpoint_id = NULL`) pro ladění
+  integrace.
+- **Log: tabulka `ivr_log` — záměrně `ENGINE = MyISAM`** (append-only, rychlé inserty, žádné
+  transakce/FK). Loguje **každé** volání: `endpoint_id` (NULL u neznámého kódu), `code`, `dtmf`,
+  `matched` (1/0/NULL), **`params` = všechny GET parametry requestu jako JSON** (`Json::encode`,
+  sloupec `JSON` = v MariaDB longtext + `CHECK json_valid`), `response` (vrácené tělo), `ip`,
+  `created_at`. Model **`App\Model\IvrLogRepository`** (`insert` / `findAll` / `findByEndpoint` /
+  `deleteByEndpoint`).
+- **Správa: `Admin\Ivr`** (sekce „IVR") = CRUD endpointů + log. Create: `Vytvořit` → endpoint se
+  založí (prázdný kód = náhodný base36 6 znaků) a redirect do **editu**, kde se ukáže **veřejná URL
+  k vložení do ODORIKu** (`link('//:Ivr:default')`). Akce `calls[/<id>]` (URL `/admin/ivr/calls` —
+  **ne `log`**, ten webhosting blokuje) = posledních 200 volání (bez id = globálně včetně neznámých
+  kódů, s id = filtrováno na endpoint). Smazání endpointu
+  smaže i jeho log (`deleteByEndpoint`; bez FK, MyISAM).
 
 ## Vzhled a layouty (Tailwind v4 + daisyUI)
 

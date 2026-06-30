@@ -1,0 +1,74 @@
+{block title}{$editedEndpoint ? 'Úprava endpointu' : 'Nový endpoint'}{/block}
+
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li><a href="{plink :Admin:Ivr:}">IVR</a></li>
+<li>{$editedEndpoint ? 'Úprava endpointu' : 'Nový endpoint'}</li>
+{/block}
+
+{block content}
+<div class="mx-auto max-w-2xl">
+    <h1 class="text-2xl font-bold">{$editedEndpoint ? 'Úprava endpointu' : 'Nový endpoint'}</h1>
+
+    <div class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <form n:name="endpointForm" class="flex flex-col gap-4">
+                <div n:foreach="$form->getOwnErrors() as $error" class="alert alert-error">
+                    {$error}
+                </div>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Název</span>
+                    <input n:name="label" class="input input-bordered w-full">
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Adresa (kód)</span>
+                    <input n:name="code" class="input input-bordered w-full font-mono">
+                    <span class="label-text-alt mt-1 block opacity-60">Prázdné = vygeneruje se náhodný. Lomítka povolena (víc segmentů cesty).</span>
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Očekávaný DTMF</span>
+                    <input n:name="expected_dtmf" class="input input-bordered w-full font-mono">
+                    <span class="label-text-alt mt-1 block opacity-60">Porovnává se s parametrem <span class="font-mono">dtmf</span> (přesná shoda, oříznuté mezery).</span>
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Odpověď při shodě</span>
+                    <textarea n:name="response_correct" class="textarea textarea-bordered w-full font-mono" rows="5"></textarea>
+                    <span class="label-text-alt mt-1 block opacity-60">Tělo odpovědi text/plain – příkazy ústředny, jeden na řádek (např. <span class="font-mono">answer</span>, <span class="font-mono">play:…</span>, <span class="font-mono">hangup</span>).</span>
+                </label>
+
+                <label class="form-control">
+                    <span class="label-text mb-1 block">Odpověď při neshodě</span>
+                    <textarea n:name="response_incorrect" class="textarea textarea-bordered w-full font-mono" rows="5"></textarea>
+                </label>
+
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input n:name="is_active" class="checkbox">
+                    <span class="label-text">Aktivní</span>
+                </label>
+
+                <div class="mt-2 flex gap-2">
+                    <button n:name="send" class="btn btn-neutral">{$editedEndpoint ? 'Uložit' : 'Vytvořit'}</button>
+                    <a href="{plink default}" class="btn btn-ghost">Zpět</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div n:if="$editedEndpoint" class="card mt-4 border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">Adresa endpointu</h2>
+            <p class="text-sm opacity-70">Tuto adresu vlož do nastavení ústředny ODORIK (URL volaná při hovoru).</p>
+
+            <a href="{$publicUrl}" target="_blank" rel="noopener" class="font-mono text-sm break-all opacity-70 hover:opacity-100">{$publicUrl}</a>
+
+            <div class="mt-2 flex flex-wrap gap-2">
+                <a href="{plink calls, $editedEndpoint->id}" class="btn btn-ghost btn-sm">Záznamy hovorů</a>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}

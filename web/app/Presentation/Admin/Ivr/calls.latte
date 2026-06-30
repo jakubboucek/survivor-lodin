@@ -1,0 +1,53 @@
+{block title}Záznamy IVR{/block}
+
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li><a href="{plink :Admin:Ivr:}">IVR</a></li>
+<li>Záznamy{ifset $endpoint} · {$endpoint->label}{/ifset}</li>
+{/block}
+
+{block content}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Záznamy hovorů{ifset $endpoint} · {$endpoint->label}{/ifset}</h1>
+    <a n:if="$endpoint" href="{plink calls}" class="btn btn-ghost btn-sm">Všechny endpointy</a>
+</div>
+<p class="mt-1 text-sm opacity-70">Posledních 200 volání. Endpoint bez záznamu (kód neznámý/neaktivní) je veden bez názvu.</p>
+
+<div class="mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Čas</th>
+                <th n:if="!isset($endpoint)">Kód</th>
+                <th>DTMF</th>
+                <th>Shoda</th>
+                <th>Odpověď</th>
+                <th>Parametry</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$logs as $row">
+                <td class="whitespace-nowrap">{$row->created_at|date:'j.n.Y H:i:s'}</td>
+                <td n:if="!isset($endpoint)" class="font-mono">{$row->code}</td>
+                <td class="font-mono">{$row->dtmf}</td>
+                <td>
+                    {if $row->matched === null}
+                        <span class="badge badge-ghost badge-sm">neznámý</span>
+                    {elseif $row->matched}
+                        <span class="badge badge-success badge-sm">shoda</span>
+                    {else}
+                        <span class="badge badge-warning badge-sm">neshoda</span>
+                    {/if}
+                </td>
+                <td class="max-w-xs"><pre class="whitespace-pre-wrap font-mono text-xs opacity-70">{$row->response}</pre></td>
+                <td class="max-w-xs"><code class="text-xs break-all opacity-70">{$row->params}</code></td>
+                <td class="font-mono text-xs opacity-70">{$row->ip}</td>
+            </tr>
+            <tr n:if="!count($logs)">
+                <td colspan="7" class="text-center opacity-60">Zatím žádné záznamy.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{/block}

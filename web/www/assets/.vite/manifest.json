@@ -4,7 +4,7 @@
     "name": "netteForms"
   },
   "admin.js": {
-    "file": "admin-Ce1-P6ja.js",
+    "file": "admin-gNgTH_34.js",
     "name": "admin",
     "src": "admin.js",
     "isEntry": true,
@@ -15,11 +15,11 @@
       "morse/index.js"
     ],
     "css": [
-      "admin-DqdzeJUc.css"
+      "admin-BKWdAk7U.css"
     ]
   },
   "main.js": {
-    "file": "main-BNb5rjdX.js",
+    "file": "main-CT1SgShv.js",
     "name": "main",
     "src": "main.js",
     "isEntry": true,
@@ -27,7 +27,7 @@
       "_netteForms-DYxo5p2d.js"
     ],
     "css": [
-      "main-CSXiC7Cw.css"
+      "main-BoSgNu7i.css"
     ]
   },
   "morse/index.js": {

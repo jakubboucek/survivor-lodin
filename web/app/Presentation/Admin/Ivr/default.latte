@@ -1,0 +1,55 @@
+{block title}IVR{/block}
+
+{block breadcrumbs}
+<li><a href="{plink :Admin:Dashboard:}">Přehled</a></li>
+<li>IVR</li>
+{/block}
+
+{block content}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">IVR</h1>
+    <div class="flex gap-2">
+        <a href="{plink calls}" class="btn btn-ghost btn-sm">Záznamy</a>
+        <a href="{plink edit}" class="btn btn-neutral btn-sm">Přidat endpoint</a>
+    </div>
+</div>
+<p class="mt-1 text-sm opacity-70">
+    Endpoint pro řízení ústředny ODORIK. Ústředna volá adresu <span class="font-mono">/ivr/&lt;kód&gt;</span>,
+    skript porovná parametr <span class="font-mono">dtmf</span> a vrátí jednu ze dvou odpovědí (text/plain).
+</p>
+
+<div class="mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Název</th>
+                <th>Kód (URL)</th>
+                <th>Očekávaný DTMF</th>
+                <th>Stav</th>
+                <th class="text-right">Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$endpoints as $endpoint">
+                <td>{$endpoint->label}</td>
+                <td class="font-mono">{$endpoint->code}</td>
+                <td class="font-mono">{$endpoint->expected_dtmf}</td>
+                <td>
+                    <span n:class="badge, 'badge-sm', ($endpoint->is_active ? 'badge-neutral' : 'badge-ghost')">
+                        {$endpoint->is_active ? 'aktivní' : 'neaktivní'}
+                    </span>
+                </td>
+                <td class="text-right">
+                    <a href="{plink calls, $endpoint->id}" class="btn btn-ghost btn-xs">Záznamy</a>
+                    <a href="{plink edit, $endpoint->id}" class="btn btn-ghost btn-xs">Upravit</a>
+                    <a href="{plink delete, $endpoint->id}" class="btn btn-ghost btn-xs text-error"
+                       onclick="return confirm('Opravdu smazat tento endpoint i s jeho záznamy?')">Smazat</a>
+                </td>
+            </tr>
+            <tr n:if="!count($endpoints)">
+                <td colspan="5" class="text-center opacity-60">Zatím žádné endpointy.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{/block}
