@@ -416,8 +416,10 @@ zvuku je 100% klientské** (žádný backend pro audio): tóny přes **Web Audio
     Z Defaultu se odvozuje prvotní stav i **merge base** (chybějící klíče v uloženém presetu se
     doplní → nikdy `undefined`).
   - `text.js` — `textToMorse()`: NFD strip diakritiky → uppercase → sloučení whitespace na jednu
-    mezeru slov → mapování. A–Z a 0–9 mají kódy, **basic-ASCII interpunkce (≤ 0x7E) se ignoruje**,
-    cokoli dál (emoji…) → **Error** (UI hlášku zobrazí, negeneruje).
+    mezeru slov → mapování. A–Z a 0–9 mají kódy, **české „ch" je jeden znak (`----`)** — scan ho
+    konzumuje jako digraf **před** rozpadem na jednotlivé znaky (proto se neiteruje prostě po
+    znacích). Basic-ASCII interpunkce (≤ 0x7E) se ignoruje, cokoli dál (emoji…) → **Error** (UI
+    hlášku zobrazí, negeneruje).
   - `audio.js` — `renderMorseWav(words, params)`: `buildTimeline` → `OfflineAudioContext` (jeden
     oscilátor na tón ⇒ **konzistentní fáze sinusu / „lupanec"**), gain envelope (fade-in/out, při
     0 ms ostrý nástup = rytmický prvek), pak ruční **16-bit PCM WAV** → `Blob`.

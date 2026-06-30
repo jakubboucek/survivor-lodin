@@ -1,7 +1,9 @@
 // Text → Morse conversion.
 //
 // Pipeline: strip diacritics (á→a, ř→r, …) via Unicode NFD decomposition, uppercase,
-// collapse all whitespace runs to a single word separator, then map each character.
+// collapse all whitespace runs to a single word separator, then map character by
+// character. Czech treats "ch" as a single letter with its own code (----), so the
+// scan must consume "ch" as one token before falling back to single characters.
 // Letters A–Z and digits 0–9 have codes; basic-ASCII punctuation is ignored; anything
 // else (e.g. emoji) is an error – the caller surfaces it and skips generation.
 
@@ -10,6 +12,7 @@ const MORSE = {
     H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.',
     O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-',
     V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..',
+    CH: '----', // Czech digraph – a single letter, not C + H
     0: '-----', 1: '.----', 2: '..---', 3: '...--', 4: '....-',
     5: '.....', 6: '-....', 7: '--...', 8: '---..', 9: '----.',
 };
@@ -37,12 +40,22 @@ export function textToMorse(input) {
     const words = [];
     let current = [];
 
-    for (const ch of normalized) {
+    const chars = [...normalized];
+    for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+
         if (ch === ' ') {
             if (current.length) {
                 words.push(current);
                 current = [];
             }
+            continue;
+        }
+
+        // Czech "ch" is one letter – consume it as a single token before single chars.
+        if (ch === 'C' && chars[i + 1] === 'H') {
+            current.push(MORSE.CH);
+            i++;
             continue;
         }
 
